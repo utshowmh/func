@@ -45,6 +45,7 @@ impl Lexer {
             }
         }
 
+        tokens.push(self.token(TokenType::EOF, None));
         Ok(tokens)
     }
 
@@ -56,6 +57,7 @@ impl Lexer {
         if !self.eof() {
             self.source[self.current]
         } else {
+            // We're never reaching this. This is just to trick the compiler.
             '\0'
         }
     }
@@ -83,6 +85,7 @@ impl Lexer {
             '%' => Ok(Some(self.token(TokenType::Modulo, None))),
             '(' => Ok(Some(self.token(TokenType::OpenParen, None))),
             ')' => Ok(Some(self.token(TokenType::CloseParen, None))),
+            '\0' => Ok(Some(self.token(TokenType::EOF, None))),
 
             _ => {
                 if current_char == ' ' || current_char == '\t' || current_char == '\r' {
@@ -91,7 +94,7 @@ impl Lexer {
                     self.line += 1;
                     Ok(None)
                 } else if current_char.is_ascii_alphabetic() {
-                    while self.peek().is_ascii_alphabetic() {
+                    while self.peek().is_ascii_alphanumeric() {
                         self.advance();
                     }
                     let lexeme: String = self.source[self.start..self.current].iter().collect();

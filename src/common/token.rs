@@ -1,6 +1,8 @@
+use std::fmt::{Display, Formatter, Result};
+
 use super::object::Object;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     Identifier,
     Integer,
@@ -16,9 +18,30 @@ pub enum TokenType {
     Equal,
 
     Let,
+
+    EOF,
 }
 
-#[derive(Debug)]
+impl Display for TokenType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        match self {
+            Self::Identifier => write!(f, "identifier"),
+            Self::Integer => write!(f, "int"),
+            Self::Plus => write!(f, "+"),
+            Self::Minus => write!(f, "-"),
+            Self::Star => write!(f, "*"),
+            Self::Slash => write!(f, "/"),
+            Self::Modulo => write!(f, "%"),
+            Self::OpenParen => write!(f, "("),
+            Self::CloseParen => write!(f, ")"),
+            Self::Equal => write!(f, "="),
+            Self::Let => write!(f, "let"),
+            Self::EOF => write!(f, "\0"),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Token {
     pub ttype: TokenType,
     pub lexeme: String,

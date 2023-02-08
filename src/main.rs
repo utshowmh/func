@@ -1,6 +1,9 @@
 use std::{env::args, fs::read_to_string, process::exit};
 
-use func::{common::error::Error, fronend::lexer::Lexer};
+use func::{
+    common::error::Error,
+    fronend::{lexer::Lexer, parser::Parser},
+};
 
 fn main() {
     run().unwrap_or_else(|err| err.report());
@@ -25,8 +28,10 @@ fn run_file(source_path: &str) -> Result<(), Error> {
 
     let mut lexer = Lexer::new(&source);
     let tokens = lexer.lex()?;
+    let mut parser = Parser::new(tokens);
+    let program = parser.parse()?;
 
-    println!("{:#?}", tokens);
+    println!("{:#?}", program);
 
     Ok(())
 }

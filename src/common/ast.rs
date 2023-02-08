@@ -1,5 +1,7 @@
 use super::token::Token;
 
+pub type Program = Vec<Statement>;
+
 #[derive(Debug)]
 pub enum Statement {
     ExpressionStatement(Expression),
@@ -7,12 +9,13 @@ pub enum Statement {
 
 #[derive(Debug)]
 pub enum Expression {
-    Binary(),
-    Unary(),
-    Group(),
-    Literal(),
+    Binary(BinaryExpression),
+    Unary(UnaryExpression),
+    Group(GroupExpression),
+    Literal(LiteralExpression),
 }
 
+#[derive(Debug)]
 pub struct BinaryExpression {
     pub left: Box<Expression>,
     pub operator: Token,
@@ -28,6 +31,8 @@ impl BinaryExpression {
         }
     }
 }
+
+#[derive(Debug)]
 pub struct UnaryExpression {
     pub operator: Token,
     pub right: Box<Expression>,
@@ -42,6 +47,7 @@ impl UnaryExpression {
     }
 }
 
+#[derive(Debug)]
 pub struct GroupExpression {
     pub child: Box<Expression>,
 }
@@ -54,6 +60,7 @@ impl GroupExpression {
     }
 }
 
+#[derive(Debug)]
 pub struct LiteralExpression {
     pub literal: Token,
 }

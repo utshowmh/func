@@ -2,7 +2,7 @@ use std::{env::args, fs::read_to_string, process::exit};
 
 use func::{
     common::error::Error,
-    fronend::{lexer::Lexer, parser::Parser},
+    frontend::{lexer::Lexer, parser::Parser},
 };
 
 fn main() {

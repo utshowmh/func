@@ -2,7 +2,8 @@
 
 ```
 program     ->      stmt*
-stmt        ->      expr
+stmt        ->      expr | let
+let         ->      "let" ident "=" expr
 expr        ->      unary | binary | group
 unary       ->      "-" expr
 binary      ->      expr op expr

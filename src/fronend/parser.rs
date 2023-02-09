@@ -1,7 +1,7 @@
 use crate::common::{
     ast::{
-        BinaryExpression, Expression, GroupExpression, LiteralExpression, Program, Statement,
-        UnaryExpression,
+        BinaryExpression, Expression, GroupExpression, LetStatement, LiteralExpression, Program,
+        Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -66,7 +66,18 @@ impl Parser {
     }
 
     fn statemet(&mut self) -> Result<Statement, Error> {
-        Ok(Statement::ExpressionStatement(self.expression()?))
+        match self.peek().ttype {
+            TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
+            _ => Ok(Statement::ExpressionStatement(self.expression()?)),
+        }
+    }
+
+    fn let_statement(&mut self) -> Result<LetStatement, Error> {
+        self.advance();
+        let identifier = self.eat(TokenType::Identifier)?;
+        self.eat(TokenType::Equal)?;
+        let expression = self.expression()?;
+        Ok(LetStatement::new(identifier, expression))
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {

@@ -4,7 +4,23 @@ pub type Program = Vec<Statement>;
 
 #[derive(Debug)]
 pub enum Statement {
+    Let(LetStatement),
     ExpressionStatement(Expression),
+}
+
+#[derive(Debug)]
+pub struct LetStatement {
+    pub identifier: Token,
+    pub expression: Expression,
+}
+
+impl LetStatement {
+    pub fn new(identifier: Token, expression: Expression) -> Self {
+        Self {
+            identifier,
+            expression,
+        }
+    }
 }
 
 #[derive(Debug)]

@@ -78,11 +78,11 @@ impl GroupExpression {
 
 #[derive(Debug)]
 pub struct LiteralExpression {
-    pub literal: Token,
+    pub object: Token,
 }
 
 impl LiteralExpression {
-    pub fn new(literal: Token) -> Self {
-        Self { literal }
+    pub fn new(object: Token) -> Self {
+        Self { object }
     }
 }

@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter, Result};
 pub enum ErrorType {
     LexingError,
     ParsingError,
+    CompilingError,
 }
 
 impl Display for ErrorType {
@@ -10,6 +11,7 @@ impl Display for ErrorType {
         match self {
             Self::LexingError => write!(f, "LexingError"),
             Self::ParsingError => write!(f, "ParsingError"),
+            Self::CompilingError => write!(f, "CompilingError"),
         }
     }
 }

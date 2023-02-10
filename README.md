@@ -1,3 +1,9 @@
 # Func
 
-**Func is a [functional programing language](https://en.wikipedia.org/wiki/Functional_programming) (not pure though!). It's gonna be mainly [compiled](https://en.wikipedia.org/wiki/Compiled_language) but will also have an [interpreter](https://en.wikipedia.org/wiki/Interpreter_(computing)) for quick devolopement. The [Grammer](https://en.wikipedia.org/wiki/Context-free_grammar) for func is defined [here](https://github.com/utshowmh/func/blob/main/GRAMMER.md).**
+## **Description**
+
+**Func is a toy [programing language](https://en.wikipedia.org/wiki/Programming_language) of mine. It has a [compiler](https://en.wikipedia.org/wiki/Compiler) which compiles the source code to [C](https://en.wikipedia.org/wiki/C_(programming_language)). I have plan to implement an [interpreter](https://en.wikipedia.org/wiki/Interpreter_(computing) too.**
+
+## **Grammer**
+
+**The [Grammer](https://en.wikipedia.org/wiki/Context-free_grammar) for func is defined [here](https://github.com/utshowmh/func/blob/main/GRAMMER.md).**

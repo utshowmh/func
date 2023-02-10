@@ -1,7 +1,8 @@
 # Grammer of Func
 
 ```
-program     ->      stmt*
+program     ->      stmt* comment*
+comment     ->      "#"*"\n"
 stmt        ->      expr | let
 let         ->      "let" ident "=" expr
 expr        ->      unary | binary | group

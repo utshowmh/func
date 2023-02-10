@@ -1,3 +1,5 @@
+# Everything Func can compile.
+
 let a = 1
 let b = 1 + 1
 let c = 1 - 1

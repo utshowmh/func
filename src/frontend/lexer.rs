@@ -87,6 +87,13 @@ impl Lexer {
             ')' => Ok(Some(self.token(TokenType::CloseParen, None))),
             '\0' => Ok(Some(self.token(TokenType::EOF, None))),
 
+            '#' => {
+                while self.peek() != '\n' && !self.eof() {
+                    self.advance();
+                }
+                Ok(None)
+            }
+
             _ => {
                 if current_char == ' ' || current_char == '\t' || current_char == '\r' {
                     Ok(None)

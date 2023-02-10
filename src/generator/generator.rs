@@ -42,7 +42,7 @@ fn generate_let_statement(let_statement: LetStatement) -> Result<String, Error> 
 
 fn generate_expression(expression: Expression) -> Result<String, Error> {
     let value = evaluate_expression(expression)?;
-    Ok(format!("{}", value))
+    Ok(format!("{};", value))
 }
 
 fn evaluate_expression(expression: Expression) -> Result<Object, Error> {

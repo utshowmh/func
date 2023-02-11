@@ -114,13 +114,28 @@ impl Lexer {
                     while self.peek().is_ascii_digit() {
                         self.advance();
                     }
-                    let lexeme: String = self.source[self.start..self.current].iter().collect();
-                    if let Ok(int) = lexeme.parse() {
-                        Ok(Some(
-                            self.token(TokenType::Integer, Some(Object::Integer(int))),
-                        ))
+                    if self.peek() == '.' {
+                        self.advance();
+                        while self.peek().is_ascii_digit() {
+                            self.advance();
+                        }
+                        let lexeme: String = self.source[self.start..self.current].iter().collect();
+                        if let Ok(float) = lexeme.parse() {
+                            Ok(Some(
+                                self.token(TokenType::Float, Some(Object::Float(float))),
+                            ))
+                        } else {
+                            panic!("could not parse {} to float", lexeme);
+                        }
                     } else {
-                        todo!()
+                        let lexeme: String = self.source[self.start..self.current].iter().collect();
+                        if let Ok(int) = lexeme.parse() {
+                            Ok(Some(
+                                self.token(TokenType::Integer, Some(Object::Integer(int))),
+                            ))
+                        } else {
+                            panic!("could not parse {} to int", lexeme);
+                        }
                     }
                 } else {
                     Err(Error::new(

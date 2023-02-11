@@ -2,15 +2,22 @@
 
 ```
 program     ->      stmt* comment*
-comment     ->      "#"*"\n"
+
+comment     ->      "#" ... "\n"
+
 stmt        ->      expr | let
+
 let         ->      "let" ident "=" expr
-expr        ->      unary | binary | group
+expr        ->      unary | binary | group | literal
+
 unary       ->      "-" expr
 binary      ->      expr op expr
 group       ->      "(" expr ")"
-op          ->      "+" | "-" | "*" | "/" | "%"
-literal     ->      int
+literal     ->      int | float | ident
+
 int         ->      [0-9]+
-indet       ->      [_a-zA-Z]+int*
+float       ->      int"."int
+indet       ->      [a-zA-Z]+int*
+
+op          ->      "+" | "-" | "*" | "/" | "%"
 ```

@@ -36,6 +36,7 @@ fn generate_let_statement(let_statement: LetStatement) -> Result<String, Error> 
     let mut value_type = String::new();
     match value {
         Object::Integer(_) => value_type.push_str("int"),
+        Object::Float(_) => value_type.push_str("float"),
     }
     Ok(format!("{} {} = {};", value_type, identifier, value))
 }
@@ -90,18 +91,72 @@ fn evaluate_binary_expression(binary_expression: BinaryExpression) -> Result<Obj
     match binary_expression.operator.ttype {
         TokenType::Plus => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x + y)),
+            (Object::Float(x), Object::Float(y)) => Ok(Object::Float(x + y)),
+            (Object::Float(_), Object::Integer(_)) | (Object::Integer(_), Object::Float(_)) => {
+                Err(Error::new(
+                    ErrorType::CompilingError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.line,
+                ))
+            }
         },
         TokenType::Minus => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x - y)),
+            (Object::Float(x), Object::Float(y)) => Ok(Object::Float(x - y)),
+            (Object::Float(_), Object::Integer(_)) | (Object::Integer(_), Object::Float(_)) => {
+                Err(Error::new(
+                    ErrorType::CompilingError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.line,
+                ))
+            }
         },
         TokenType::Star => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x * y)),
+            (Object::Float(x), Object::Float(y)) => Ok(Object::Float(x * y)),
+            (Object::Float(_), Object::Integer(_)) | (Object::Integer(_), Object::Float(_)) => {
+                Err(Error::new(
+                    ErrorType::CompilingError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.line,
+                ))
+            }
         },
         TokenType::Slash => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x / y)),
+            (Object::Float(x), Object::Float(y)) => Ok(Object::Float(x / y)),
+            (Object::Float(_), Object::Integer(_)) | (Object::Integer(_), Object::Float(_)) => {
+                Err(Error::new(
+                    ErrorType::CompilingError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.line,
+                ))
+            }
         },
         TokenType::Modulo => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x % y)),
+            (Object::Float(_), Object::Float(_))
+            | (Object::Float(_), Object::Integer(_))
+            | (Object::Integer(_), Object::Float(_)) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` expects int",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.line,
+            )),
         },
 
         _ => Err(Error::new(
@@ -132,6 +187,7 @@ fn evaluate_unary_expression(unary_expression: UnaryExpression) -> Result<Object
     match unary_expression.operator.ttype {
         TokenType::Minus => match right {
             Object::Integer(x) => Ok(Object::Integer(x * -1)),
+            Object::Float(x) => Ok(Object::Float(x * -1.0)),
         },
 
         _ => Err(Error::new(

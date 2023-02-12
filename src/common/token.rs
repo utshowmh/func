@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, Result};
 
-use super::object::Object;
+use super::{object::Object, position::Position};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
@@ -48,16 +48,21 @@ pub struct Token {
     pub ttype: TokenType,
     pub lexeme: String,
     pub literal: Option<Object>,
-    pub line: usize,
+    pub position: Position,
 }
 
 impl Token {
-    pub fn new(ttype: TokenType, lexeme: String, literal: Option<Object>, line: usize) -> Self {
+    pub fn new(
+        ttype: TokenType,
+        lexeme: String,
+        literal: Option<Object>,
+        position: Position,
+    ) -> Self {
         Self {
             ttype,
             lexeme,
             literal,
-            line,
+            position,
         }
     }
 }

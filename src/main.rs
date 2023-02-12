@@ -45,7 +45,7 @@ fn run_file(source_path: &str, output_path: Option<&str>) -> Result<(), Error> {
         exit(64);
     });
 
-    let mut lexer = Lexer::new(&source);
+    let mut lexer = Lexer::new(source_path.to_string(), &source);
     let tokens = lexer.lex()?;
     let mut parser = Parser::new(tokens);
     let program = parser.parse()?;

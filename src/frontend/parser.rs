@@ -60,7 +60,7 @@ impl Parser {
             Err(Error::new(
                 ErrorType::ParsingError,
                 format!("Expected `{}`, found `{}`", ttype, token.ttype),
-                token.line,
+                token.position,
             ))
         }
     }
@@ -132,7 +132,7 @@ impl Parser {
             Err(Error::new(
                 ErrorType::ParsingError,
                 format!("Unexpected token `{}`", token.ttype),
-                token.line,
+                token.position,
             ))
         }
     }

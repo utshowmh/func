@@ -99,7 +99,7 @@ fn evaluate_binary_expression(binary_expression: BinaryExpression) -> Result<Obj
                         "Type mismatch, `{}` expects same type on both side",
                         binary_expression.operator.lexeme
                     ),
-                    binary_expression.operator.line,
+                    binary_expression.operator.position,
                 ))
             }
         },
@@ -113,7 +113,7 @@ fn evaluate_binary_expression(binary_expression: BinaryExpression) -> Result<Obj
                         "Type mismatch, `{}` expects same type on both side",
                         binary_expression.operator.lexeme
                     ),
-                    binary_expression.operator.line,
+                    binary_expression.operator.position,
                 ))
             }
         },
@@ -127,7 +127,7 @@ fn evaluate_binary_expression(binary_expression: BinaryExpression) -> Result<Obj
                         "Type mismatch, `{}` expects same type on both side",
                         binary_expression.operator.lexeme
                     ),
-                    binary_expression.operator.line,
+                    binary_expression.operator.position,
                 ))
             }
         },
@@ -141,7 +141,7 @@ fn evaluate_binary_expression(binary_expression: BinaryExpression) -> Result<Obj
                         "Type mismatch, `{}` expects same type on both side",
                         binary_expression.operator.lexeme
                     ),
-                    binary_expression.operator.line,
+                    binary_expression.operator.position,
                 ))
             }
         },
@@ -155,7 +155,7 @@ fn evaluate_binary_expression(binary_expression: BinaryExpression) -> Result<Obj
                     "Type mismatch, `{}` expects int",
                     binary_expression.operator.lexeme
                 ),
-                binary_expression.operator.line,
+                binary_expression.operator.position,
             )),
         },
 
@@ -165,7 +165,7 @@ fn evaluate_binary_expression(binary_expression: BinaryExpression) -> Result<Obj
                 "`{}` is not a binary operator.",
                 binary_expression.operator.lexeme
             ),
-            binary_expression.operator.line,
+            binary_expression.operator.position,
         )),
     }
 }
@@ -196,7 +196,7 @@ fn evaluate_unary_expression(unary_expression: UnaryExpression) -> Result<Object
                 "`{}` is not a unary operator.",
                 unary_expression.operator.lexeme
             ),
-            unary_expression.operator.line,
+            unary_expression.operator.position,
         )),
     }
 }

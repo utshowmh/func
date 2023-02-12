@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::common::{
     error::{Error, ErrorType},
     object::Object,
+    position::Position,
     token::{Token, TokenType},
 };
 
@@ -13,11 +14,12 @@ pub struct Lexer {
 
     start: usize,
     current: usize,
-    line: usize,
+
+    current_position: Position,
 }
 
 impl Lexer {
-    pub fn new(source: &str) -> Self {
+    pub fn new(source_path: String, source: &str) -> Self {
         Self {
             source: source.chars().collect(),
 
@@ -25,7 +27,8 @@ impl Lexer {
 
             start: 0,
             current: 0,
-            line: 1,
+
+            current_position: Position::new(source_path, 1, 0),
         }
     }
 
@@ -65,18 +68,21 @@ impl Lexer {
     fn advance(&mut self) {
         if !self.eof() {
             self.current += 1;
+            self.current_position.row += 1;
         }
     }
 
     fn token(&self, ttype: TokenType, literal: Option<Object>) -> Token {
         let lexeme: String = self.source[self.start..self.current].iter().collect();
-        Token::new(ttype, lexeme, literal, self.line)
+        Token::new(ttype, lexeme, literal, self.current_position.clone())
     }
 
     fn next_token(&mut self) -> Result<Option<Token>, Error> {
         let current_char = self.peek();
         self.advance();
         match current_char {
+            ' ' | '\t' | '\r' => Ok(None),
+
             '=' => Ok(Some(self.token(TokenType::Equal, None))),
             '+' => Ok(Some(self.token(TokenType::Plus, None))),
             '-' => Ok(Some(self.token(TokenType::Minus, None))),
@@ -94,13 +100,14 @@ impl Lexer {
                 Ok(None)
             }
 
+            '\n' => {
+                self.current_position.column += 1;
+                self.current_position.row = 0;
+                Ok(None)
+            }
+
             _ => {
-                if current_char == ' ' || current_char == '\t' || current_char == '\r' {
-                    Ok(None)
-                } else if current_char == '\n' {
-                    self.line += 1;
-                    Ok(None)
-                } else if current_char.is_ascii_alphabetic() {
+                if current_char.is_ascii_alphabetic() {
                     while self.peek().is_ascii_alphanumeric() {
                         self.advance();
                     }
@@ -141,7 +148,7 @@ impl Lexer {
                     Err(Error::new(
                         ErrorType::LexingError,
                         format!("Unexpected charected `{}`", current_char),
-                        self.line,
+                        self.current_position.clone(),
                     ))
                 }
             }

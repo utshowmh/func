@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
 
+use super::position::Position;
+
 pub enum ErrorType {
     LexingError,
     ParsingError,
@@ -19,19 +21,26 @@ impl Display for ErrorType {
 pub struct Error {
     e_type: ErrorType,
     message: String,
-    line: usize,
+    position: Position,
 }
 
 impl Error {
-    pub fn new(e_type: ErrorType, message: String, line: usize) -> Self {
+    pub fn new(e_type: ErrorType, message: String, position: Position) -> Self {
         Self {
             e_type,
             message,
-            line,
+            position,
         }
     }
 
     pub fn report(&self) {
-        eprintln!("{}: {} in line {}.", self.e_type, self.message, self.line);
+        eprintln!(
+            "{}: {} in line {}:{} on file {}.",
+            self.e_type,
+            self.message,
+            self.position.column,
+            self.position.row,
+            self.position.source_path
+        );
     }
 }

@@ -1,5 +1,7 @@
 let nothing = nil
+let everything = "cosmos"
 let age = 14.6
 
 print(nothing)
+print(everything)
 print(age)

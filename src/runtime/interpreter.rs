@@ -65,121 +65,149 @@ impl Interpreter {
             TokenType::Plus => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x + y)),
 
+                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+
                 (Object::Nil, Object::Nil) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
-                        "Type mismatch, `{}` does not support `nil` as it's operand",
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
                         binary_expression.operator.lexeme
                     ),
                     binary_expression.operator.position,
                 )),
 
-                (Object::Number(_), Object::Nil) | (Object::Nil, Object::Number(_)) => {
-                    Err(Error::new(
-                        ErrorType::RuntimeError,
-                        format!(
-                            "Type mismatch, `{}` expects same type on both side",
-                            binary_expression.operator.lexeme
-                        ),
-                        binary_expression.operator.position,
-                    ))
-                }
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
             },
 
             TokenType::Minus => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x - y)),
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::String(_), Object::String(_)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
-                        "Type mismatch, `{}` does not support `nil` as it's operand",
+                        "Type mismatch, `{}` doesn't support `string` as it's operand",
                         binary_expression.operator.lexeme
                     ),
                     binary_expression.operator.position,
                 )),
 
-                (Object::Number(_), Object::Nil) | (Object::Nil, Object::Number(_)) => {
-                    Err(Error::new(
-                        ErrorType::RuntimeError,
-                        format!(
-                            "Type mismatch, `{}` expects same type on both side",
-                            binary_expression.operator.lexeme
-                        ),
-                        binary_expression.operator.position,
-                    ))
-                }
+                (Object::Nil, Object::Nil) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
             },
 
             TokenType::Star => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x * y)),
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::String(_), Object::String(_)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
-                        "Type mismatch, `{}` does not support `nil` as it's operand",
+                        "Type mismatch, `{}` doesn't support `string` as it's operand",
                         binary_expression.operator.lexeme
                     ),
                     binary_expression.operator.position,
                 )),
 
-                (Object::Number(_), Object::Nil) | (Object::Nil, Object::Number(_)) => {
-                    Err(Error::new(
-                        ErrorType::RuntimeError,
-                        format!(
-                            "Type mismatch, `{}` expects same type on both side",
-                            binary_expression.operator.lexeme
-                        ),
-                        binary_expression.operator.position,
-                    ))
-                }
+                (Object::Nil, Object::Nil) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
             },
 
             TokenType::Slash => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x / y)),
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::String(_), Object::String(_)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
-                        "Type mismatch, `{}` does not support `nil` as it's operand",
+                        "Type mismatch, `{}` doesn't support `string` as it's operand",
                         binary_expression.operator.lexeme
                     ),
                     binary_expression.operator.position,
                 )),
 
-                (Object::Number(_), Object::Nil) | (Object::Nil, Object::Number(_)) => {
-                    Err(Error::new(
-                        ErrorType::RuntimeError,
-                        format!(
-                            "Type mismatch, `{}` expects same type on both side",
-                            binary_expression.operator.lexeme
-                        ),
-                        binary_expression.operator.position,
-                    ))
-                }
+                (Object::Nil, Object::Nil) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
             },
 
             TokenType::Modulo => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x % y)),
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::String(_), Object::String(_)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
-                        "Type mismatch, `{}` does not support `nil` as it's operand",
+                        "Type mismatch, `{}` doesn't support `string` as it's operand",
                         binary_expression.operator.lexeme
                     ),
                     binary_expression.operator.position,
                 )),
 
-                (Object::Number(_), Object::Nil) | (Object::Nil, Object::Number(_)) => {
-                    Err(Error::new(
-                        ErrorType::RuntimeError,
-                        format!(
-                            "Type mismatch, `{}` expects same type on both side",
-                            binary_expression.operator.lexeme
-                        ),
-                        binary_expression.operator.position,
-                    ))
-                }
+                (Object::Nil, Object::Nil) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
             },
 
             _ => Err(Error::new(
@@ -202,6 +230,14 @@ impl Interpreter {
         match unary_expression.operator.ttype {
             TokenType::Minus => match right {
                 Object::Number(x) => Ok(Object::Number(x * -1.)),
+                Object::String(_) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` does not support `string` as it's operand",
+                        unary_expression.operator.lexeme
+                    ),
+                    unary_expression.operator.position,
+                )),
                 Object::Nil => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(

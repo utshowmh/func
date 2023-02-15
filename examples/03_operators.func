@@ -1,6 +1,8 @@
 let x = 42
 let y = 9
 
+print("func_" + "operators:")
+
 print(x + y)
 print(x - y)
 print(x * y)

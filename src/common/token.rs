@@ -5,8 +5,8 @@ use super::{object::Object, position::Position};
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     Identifier,
-    Integer,
-    Float,
+    Number,
+    String,
     Nil,
 
     Plus,
@@ -29,8 +29,8 @@ impl Display for TokenType {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             Self::Identifier => write!(f, "identifier"),
-            Self::Integer => write!(f, "int"),
-            Self::Float => write!(f, "float"),
+            Self::Number => write!(f, "number"),
+            Self::String => write!(f, "string"),
             Self::Nil => write!(f, "nil"),
 
             Self::Plus => write!(f, "+"),

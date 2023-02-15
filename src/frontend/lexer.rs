@@ -86,14 +86,47 @@ impl Lexer {
             ' ' | '\t' | '\r' => Ok(None),
 
             '=' => Ok(Some(self.token(TokenType::Equal, None))),
+
             '+' => Ok(Some(self.token(TokenType::Plus, None))),
+
             '-' => Ok(Some(self.token(TokenType::Minus, None))),
+
             '*' => Ok(Some(self.token(TokenType::Star, None))),
+
             '/' => Ok(Some(self.token(TokenType::Slash, None))),
+
             '%' => Ok(Some(self.token(TokenType::Modulo, None))),
+
             '(' => Ok(Some(self.token(TokenType::OpenParen, None))),
+
             ')' => Ok(Some(self.token(TokenType::CloseParen, None))),
+
             '\0' => Ok(Some(self.token(TokenType::EOF, None))),
+
+            '"' => {
+                self.advance();
+                loop {
+                    if self.peek() == '"' || self.peek() == '\0' {
+                        break;
+                    }
+                    self.advance();
+                }
+                if self.peek() == '"' {
+                    self.advance();
+                    let lexeme: String = self.source[self.start + 1..self.current - 1]
+                        .iter()
+                        .collect();
+                    Ok(Some(
+                        self.token(TokenType::String, Some(Object::String(lexeme))),
+                    ))
+                } else {
+                    Err(Error::new(
+                        ErrorType::LexingError,
+                        format!("Unterminated string"),
+                        self.current_position.clone(),
+                    ))
+                }
+            }
 
             '#' => {
                 while self.peek() != '\n' && !self.eof() {
@@ -132,9 +165,10 @@ impl Lexer {
                     let lexeme: String = self.source[self.start..self.current].iter().collect();
                     if let Ok(float) = lexeme.parse() {
                         Ok(Some(
-                            self.token(TokenType::Float, Some(Object::Number(float))),
+                            self.token(TokenType::Number, Some(Object::Number(float))),
                         ))
                     } else {
+                        self.current_position.column += 1; // Putting cursor after charecter.
                         Err(Error::new(
                             ErrorType::LexingError,
                             format!("could not parse {} to float", lexeme),
@@ -142,6 +176,7 @@ impl Lexer {
                         ))
                     }
                 } else {
+                    self.current_position.column += 1; // Putting cursor after charecter.
                     Err(Error::new(
                         ErrorType::LexingError,
                         format!("Unexpected charected `{}`", current_char),

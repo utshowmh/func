@@ -28,7 +28,7 @@ impl Lexer {
             start: 0,
             current: 0,
 
-            current_position: Position::new(source_path, 1, 0),
+            current_position: Position::new(source_path, 0, 1),
         }
     }
 
@@ -68,7 +68,7 @@ impl Lexer {
     fn advance(&mut self) {
         if !self.eof() {
             self.current += 1;
-            self.current_position.row += 1;
+            self.current_position.column += 1;
         }
     }
 
@@ -101,8 +101,8 @@ impl Lexer {
             }
 
             '\n' => {
-                self.current_position.column += 1;
-                self.current_position.row = 0;
+                self.current_position.row += 1;
+                self.current_position.column = 0;
                 Ok(None)
             }
 

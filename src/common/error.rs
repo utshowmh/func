@@ -35,11 +35,11 @@ impl Error {
 
     pub fn report(&self) {
         eprintln!(
-            "{}: {} in line {}:{} on file {}.",
+            "{}: {} in line {}:{} (file: {}).",
             self.e_type,
             self.message,
-            self.position.column,
             self.position.row,
+            self.position.column,
             self.position.source_path
         );
     }

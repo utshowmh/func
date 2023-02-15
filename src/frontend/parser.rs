@@ -81,25 +81,25 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
-        self.multiplicative()
+        self.additive()
     }
 
-    fn multiplicative(&mut self) -> Result<Expression, Error> {
-        let mut left = self.additive()?;
+    fn additive(&mut self) -> Result<Expression, Error> {
+        let mut left = self.multiplicative()?;
 
-        while self.does_match(&[TokenType::Star, TokenType::Slash, TokenType::Modulo]) {
+        while self.does_match(&[TokenType::Plus, TokenType::Minus]) {
             let operator = self.next_token();
-            let right = self.additive()?;
+            let right = self.multiplicative()?;
             left = Expression::Binary(BinaryExpression::new(left, operator, right));
         }
 
         return Ok(left);
     }
 
-    fn additive(&mut self) -> Result<Expression, Error> {
+    fn multiplicative(&mut self) -> Result<Expression, Error> {
         let mut left = self.unary()?;
 
-        while self.does_match(&[TokenType::Plus, TokenType::Minus]) {
+        while self.does_match(&[TokenType::Star, TokenType::Slash, TokenType::Modulo]) {
             let operator = self.next_token();
             let right = self.unary()?;
             left = Expression::Binary(BinaryExpression::new(left, operator, right));

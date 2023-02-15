@@ -1,7 +1,7 @@
 use crate::common::{
     ast::{
-        BinaryExpression, Expression, GroupExpression, LetStatement, LiteralExpression, Program,
-        Statement, UnaryExpression,
+        BinaryExpression, Expression, GroupExpression, IdentifierExpression, LetStatement,
+        LiteralExpression, PrintStatement, Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -68,7 +68,12 @@ impl Parser {
     fn statemet(&mut self) -> Result<Statement, Error> {
         match self.peek().ttype {
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
-            _ => Ok(Statement::ExpressionStatement(self.expression()?)),
+            TokenType::Print => Ok(Statement::Print(self.print_statement()?)),
+            _ => Err(Error::new(
+                ErrorType::ParsingError,
+                format!("Expression is not used."),
+                self.peek().position,
+            )),
         }
     }
 
@@ -78,6 +83,14 @@ impl Parser {
         self.eat(TokenType::Equal)?;
         let expression = self.expression()?;
         Ok(LetStatement::new(identifier, expression))
+    }
+
+    fn print_statement(&mut self) -> Result<PrintStatement, Error> {
+        self.advance();
+        self.eat(TokenType::OpenParen)?;
+        let expression = self.expression()?;
+        self.eat(TokenType::CloseParen)?;
+        Ok(PrintStatement::new(expression))
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
@@ -118,13 +131,12 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expression, Error> {
-        if self.does_match(&[
-            TokenType::Identifier,
-            TokenType::Integer,
-            TokenType::Float,
-            TokenType::Nil,
-        ]) {
+        if self.does_match(&[TokenType::Integer, TokenType::Float, TokenType::Nil]) {
             Ok(Expression::Literal(LiteralExpression::new(
+                self.next_token(),
+            )))
+        } else if self.does_match(&[TokenType::Identifier]) {
+            Ok(Expression::Identifier(IdentifierExpression::new(
                 self.next_token(),
             )))
         } else if self.does_match(&[TokenType::OpenParen]) {

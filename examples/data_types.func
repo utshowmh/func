@@ -1,0 +1,5 @@
+let nothing = nil
+let age = 14.6
+
+print(nothing)
+print(age)

@@ -5,7 +5,7 @@ use super::position::Position;
 pub enum ErrorType {
     LexingError,
     ParsingError,
-    CompilingError,
+    RuntimeError,
 }
 
 impl Display for ErrorType {
@@ -13,7 +13,7 @@ impl Display for ErrorType {
         match self {
             Self::LexingError => write!(f, "LexingError"),
             Self::ParsingError => write!(f, "ParsingError"),
-            Self::CompilingError => write!(f, "CompilingError"),
+            Self::RuntimeError => write!(f, "RuntimeError"),
         }
     }
 }

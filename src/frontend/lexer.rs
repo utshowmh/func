@@ -34,6 +34,7 @@ impl Lexer {
 
     fn init_keywords(&mut self) {
         self.keywords.insert("let".to_string(), TokenType::Let);
+        self.keywords.insert("print".to_string(), TokenType::Print);
         self.keywords.insert("nil".to_string(), TokenType::Nil);
     }
 
@@ -127,23 +128,18 @@ impl Lexer {
                         while self.peek().is_ascii_digit() {
                             self.advance();
                         }
-                        let lexeme: String = self.source[self.start..self.current].iter().collect();
-                        if let Ok(float) = lexeme.parse() {
-                            Ok(Some(
-                                self.token(TokenType::Float, Some(Object::Float(float))),
-                            ))
-                        } else {
-                            panic!("could not parse {} to float", lexeme);
-                        }
+                    }
+                    let lexeme: String = self.source[self.start..self.current].iter().collect();
+                    if let Ok(float) = lexeme.parse() {
+                        Ok(Some(
+                            self.token(TokenType::Float, Some(Object::Number(float))),
+                        ))
                     } else {
-                        let lexeme: String = self.source[self.start..self.current].iter().collect();
-                        if let Ok(int) = lexeme.parse() {
-                            Ok(Some(
-                                self.token(TokenType::Integer, Some(Object::Integer(int))),
-                            ))
-                        } else {
-                            panic!("could not parse {} to int", lexeme);
-                        }
+                        Err(Error::new(
+                            ErrorType::LexingError,
+                            format!("could not parse {} to float", lexeme),
+                            self.current_position.clone(),
+                        ))
                     }
                 } else {
                     Err(Error::new(

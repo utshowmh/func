@@ -1,0 +1,4 @@
+let x = 9
+let y = 42
+
+print((x - y) / x + y * x)

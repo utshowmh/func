@@ -20,6 +20,7 @@ pub enum TokenType {
     Equal,
 
     Let,
+    Print,
 
     EOF,
 }
@@ -42,6 +43,7 @@ impl Display for TokenType {
             Self::Equal => write!(f, "="),
 
             Self::Let => write!(f, "let"),
+            Self::Print => write!(f, "print"),
 
             Self::EOF => write!(f, "\0"),
         }

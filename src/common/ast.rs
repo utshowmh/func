@@ -5,7 +5,7 @@ pub type Program = Vec<Statement>;
 #[derive(Debug)]
 pub enum Statement {
     Let(LetStatement),
-    ExpressionStatement(Expression),
+    Print(PrintStatement),
 }
 
 #[derive(Debug)]
@@ -24,10 +24,22 @@ impl LetStatement {
 }
 
 #[derive(Debug)]
+pub struct PrintStatement {
+    pub expression: Expression,
+}
+
+impl PrintStatement {
+    pub fn new(expression: Expression) -> Self {
+        Self { expression }
+    }
+}
+
+#[derive(Debug)]
 pub enum Expression {
     Binary(BinaryExpression),
     Unary(UnaryExpression),
     Group(GroupExpression),
+    Identifier(IdentifierExpression),
     Literal(LiteralExpression),
 }
 
@@ -73,6 +85,17 @@ impl GroupExpression {
         Self {
             child: Box::new(child),
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct IdentifierExpression {
+    pub identifier: Token,
+}
+
+impl IdentifierExpression {
+    pub fn new(identifier: Token) -> Self {
+        Self { identifier }
     }
 }
 

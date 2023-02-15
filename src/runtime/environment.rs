@@ -6,6 +6,7 @@ use crate::common::{
     token::Token,
 };
 
+#[derive(Clone)]
 pub struct Environment {
     bindings: HashMap<String, Object>,
 }
@@ -27,7 +28,7 @@ impl Environment {
         } else {
             Err(Error::new(
                 ErrorType::RuntimeError,
-                format!("Variable {} doesn't exist.", identifier.lexeme),
+                format!("Variable `{}` doesn't exist.", identifier.lexeme),
                 identifier.position,
             ))
         }

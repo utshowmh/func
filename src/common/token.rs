@@ -17,6 +17,9 @@ pub enum TokenType {
 
     OpenParen,
     CloseParen,
+    OpenCurly,
+    CloseCurly,
+
     Equal,
 
     Let,
@@ -38,8 +41,12 @@ impl Display for TokenType {
             Self::Star => write!(f, "*"),
             Self::Slash => write!(f, "/"),
             Self::Modulo => write!(f, "%"),
+
             Self::OpenParen => write!(f, "("),
             Self::CloseParen => write!(f, ")"),
+            Self::OpenCurly => write!(f, "{{"),
+            Self::CloseCurly => write!(f, "}}"),
+
             Self::Equal => write!(f, "="),
 
             Self::Let => write!(f, "let"),

@@ -6,6 +6,7 @@ pub type Program = Vec<Statement>;
 pub enum Statement {
     Let(LetStatement),
     Print(PrintStatement),
+    Block(BlockStatement),
 }
 
 #[derive(Debug)]
@@ -31,6 +32,19 @@ pub struct PrintStatement {
 impl PrintStatement {
     pub fn new(expression: Expression) -> Self {
         Self { expression }
+    }
+}
+
+#[derive(Debug)]
+pub struct BlockStatement {
+    pub statements: Box<Vec<Statement>>,
+}
+
+impl BlockStatement {
+    pub fn new(statements: Vec<Statement>) -> Self {
+        Self {
+            statements: Box::new(statements),
+        }
     }
 }
 

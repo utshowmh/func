@@ -1,0 +1,6 @@
+{
+    let god = "nature"          # Well, I'm an Spinozist : )
+    print("god is: " + god)
+}
+
+print("god is: " + god)         # this will thorw an RuntimeError 'cause god has gone out of scope.

@@ -101,6 +101,10 @@ impl Lexer {
 
             ')' => Ok(Some(self.token(TokenType::CloseParen, None))),
 
+            '{' => Ok(Some(self.token(TokenType::OpenCurly, None))),
+
+            '}' => Ok(Some(self.token(TokenType::CloseCurly, None))),
+
             '\0' => Ok(Some(self.token(TokenType::EOF, None))),
 
             '"' => {

@@ -1,7 +1,7 @@
 use crate::common::{
     ast::{
-        BinaryExpression, Expression, GroupExpression, IdentifierExpression, LetStatement,
-        PrintStatement, Program, Statement, UnaryExpression,
+        BinaryExpression, BlockStatement, Expression, GroupExpression, IdentifierExpression,
+        LetStatement, PrintStatement, Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     object::Object,
@@ -23,15 +23,17 @@ impl Interpreter {
 
     pub fn interpret(&mut self, program: Program) -> Result<(), Error> {
         for statement in program {
-            match statement {
-                Statement::Let(let_statement) => self.execute_let_statement(let_statement)?,
-                Statement::Print(print_statement) => {
-                    self.execute_print_statement(print_statement)?
-                }
-            }
+            self.execute_statements(statement)?;
         }
-
         Ok(())
+    }
+
+    fn execute_statements(&mut self, statement: Statement) -> Result<(), Error> {
+        match statement {
+            Statement::Let(let_statement) => self.execute_let_statement(let_statement),
+            Statement::Print(print_statement) => self.execute_print_statement(print_statement),
+            Statement::Block(block_statement) => self.execute_block_statement(block_statement),
+        }
     }
 
     fn execute_let_statement(&mut self, let_statement: LetStatement) -> Result<(), Error> {
@@ -46,6 +48,15 @@ impl Interpreter {
         let value = self.evaluate_expression(print_statement.expression)?;
         println!("{}", value);
 
+        Ok(())
+    }
+
+    fn execute_block_statement(&mut self, block_statment: BlockStatement) -> Result<(), Error> {
+        let old_environment = self.environment.clone();
+        for statement in *block_statment.statements {
+            self.execute_statements(statement)?;
+        }
+        self.environment = old_environment;
         Ok(())
     }
 

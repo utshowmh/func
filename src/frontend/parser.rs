@@ -1,7 +1,7 @@
 use crate::common::{
     ast::{
-        BinaryExpression, Expression, GroupExpression, IdentifierExpression, LetStatement,
-        LiteralExpression, PrintStatement, Program, Statement, UnaryExpression,
+        BinaryExpression, BlockStatement, Expression, GroupExpression, IdentifierExpression,
+        LetStatement, LiteralExpression, PrintStatement, Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -69,6 +69,7 @@ impl Parser {
         match self.peek().ttype {
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
             TokenType::Print => Ok(Statement::Print(self.print_statement()?)),
+            TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
             _ => Err(Error::new(
                 ErrorType::ParsingError,
                 format!("Expression is not used."),
@@ -91,6 +92,19 @@ impl Parser {
         let expression = self.expression()?;
         self.eat(TokenType::CloseParen)?;
         Ok(PrintStatement::new(expression))
+    }
+
+    fn block_statement(&mut self) -> Result<BlockStatement, Error> {
+        self.advance();
+        let mut statements = Vec::new();
+        loop {
+            if self.does_match(&[TokenType::CloseCurly]) || self.eof() {
+                break;
+            }
+            statements.push(self.statemet()?);
+        }
+        self.eat(TokenType::CloseCurly)?;
+        Ok(BlockStatement::new(statements))
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {

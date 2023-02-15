@@ -118,7 +118,12 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expression, Error> {
-        if self.does_match(&[TokenType::Identifier, TokenType::Integer, TokenType::Float]) {
+        if self.does_match(&[
+            TokenType::Identifier,
+            TokenType::Integer,
+            TokenType::Float,
+            TokenType::Nil,
+        ]) {
             Ok(Expression::Literal(LiteralExpression::new(
                 self.next_token(),
             )))

@@ -34,6 +34,7 @@ impl Lexer {
 
     fn init_keywords(&mut self) {
         self.keywords.insert("let".to_string(), TokenType::Let);
+        self.keywords.insert("nil".to_string(), TokenType::Nil);
     }
 
     pub fn lex(&mut self) -> Result<Vec<Token>, Error> {

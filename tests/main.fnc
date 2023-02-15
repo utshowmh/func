@@ -1,5 +1,7 @@
 # Everything Func can compile.
 
+let x = nil
+
 let a = 1
 let b = 1 + 1
 let c = 1 - 1

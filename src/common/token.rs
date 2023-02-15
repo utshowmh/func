@@ -7,6 +7,7 @@ pub enum TokenType {
     Identifier,
     Integer,
     Float,
+    Nil,
 
     Plus,
     Minus,
@@ -28,6 +29,9 @@ impl Display for TokenType {
         match self {
             Self::Identifier => write!(f, "identifier"),
             Self::Integer => write!(f, "int"),
+            Self::Float => write!(f, "float"),
+            Self::Nil => write!(f, "nil"),
+
             Self::Plus => write!(f, "+"),
             Self::Minus => write!(f, "-"),
             Self::Star => write!(f, "*"),
@@ -36,8 +40,9 @@ impl Display for TokenType {
             Self::OpenParen => write!(f, "("),
             Self::CloseParen => write!(f, ")"),
             Self::Equal => write!(f, "="),
+
             Self::Let => write!(f, "let"),
-            Self::Float => write!(f, "float"),
+
             Self::EOF => write!(f, "\0"),
         }
     }

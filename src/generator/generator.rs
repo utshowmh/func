@@ -8,7 +8,7 @@ use crate::common::{
     token::TokenType,
 };
 
-pub struct Generator {}
+pub struct Generator;
 
 impl Generator {
     pub fn generate(program: Program) -> Result<String, Error> {
@@ -25,7 +25,21 @@ impl Generator {
             }
         }
 
-        let code = format!("int main() {{  {}return 0; }}", code);
+        let object_def = format!(
+            "enum Object {{
+                Integer(i64),
+                Float(f64),
+                Nil, 
+            }}"
+        );
+        let code = format!(
+            "{}
+            fn main() {{
+                use Object::*;
+                {}
+            }}",
+            object_def, code
+        );
         Ok(code)
     }
 }
@@ -33,12 +47,7 @@ impl Generator {
 fn generate_let_statement(let_statement: LetStatement) -> Result<String, Error> {
     let identifier = let_statement.identifier.lexeme;
     let value = evaluate_expression(let_statement.expression)?;
-    let mut value_type = String::new();
-    match value {
-        Object::Integer(_) => value_type.push_str("int"),
-        Object::Float(_) => value_type.push_str("float"),
-    }
-    Ok(format!("{} {} = {};", value_type, identifier, value))
+    Ok(format!("let {} = {};", identifier, value))
 }
 
 fn generate_expression(expression: Expression) -> Result<String, Error> {
@@ -55,7 +64,7 @@ fn evaluate_expression(expression: Expression) -> Result<Object, Error> {
             if let Some(object) = literal_expression.object.literal {
                 Ok(object)
             } else {
-                todo!("Gotta return Nil");
+                Ok(Object::Nil)
             }
         }
     }
@@ -92,67 +101,127 @@ fn evaluate_binary_expression(binary_expression: BinaryExpression) -> Result<Obj
         TokenType::Plus => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x + y)),
             (Object::Float(x), Object::Float(y)) => Ok(Object::Float(x + y)),
-            (Object::Float(_), Object::Integer(_)) | (Object::Integer(_), Object::Float(_)) => {
-                Err(Error::new(
-                    ErrorType::CompilingError,
-                    format!(
-                        "Type mismatch, `{}` expects same type on both side",
-                        binary_expression.operator.lexeme
-                    ),
-                    binary_expression.operator.position,
-                ))
-            }
+            (Object::Nil, Object::Nil) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` does not support `nil` as it's operand",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
+            (Object::Float(_), Object::Integer(_))
+            | (Object::Integer(_), Object::Float(_))
+            | (Object::Integer(_), Object::Nil)
+            | (Object::Float(_), Object::Nil)
+            | (Object::Nil, Object::Integer(_))
+            | (Object::Nil, Object::Float(_)) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` expects same type on both side",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
         },
+
         TokenType::Minus => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x - y)),
             (Object::Float(x), Object::Float(y)) => Ok(Object::Float(x - y)),
-            (Object::Float(_), Object::Integer(_)) | (Object::Integer(_), Object::Float(_)) => {
-                Err(Error::new(
-                    ErrorType::CompilingError,
-                    format!(
-                        "Type mismatch, `{}` expects same type on both side",
-                        binary_expression.operator.lexeme
-                    ),
-                    binary_expression.operator.position,
-                ))
-            }
+            (Object::Nil, Object::Nil) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` does not support `nil` as it's operand",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
+            (Object::Float(_), Object::Integer(_))
+            | (Object::Integer(_), Object::Float(_))
+            | (Object::Integer(_), Object::Nil)
+            | (Object::Float(_), Object::Nil)
+            | (Object::Nil, Object::Integer(_))
+            | (Object::Nil, Object::Float(_)) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` expects same type on both side",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
         },
+
         TokenType::Star => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x * y)),
             (Object::Float(x), Object::Float(y)) => Ok(Object::Float(x * y)),
-            (Object::Float(_), Object::Integer(_)) | (Object::Integer(_), Object::Float(_)) => {
-                Err(Error::new(
-                    ErrorType::CompilingError,
-                    format!(
-                        "Type mismatch, `{}` expects same type on both side",
-                        binary_expression.operator.lexeme
-                    ),
-                    binary_expression.operator.position,
-                ))
-            }
+            (Object::Nil, Object::Nil) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` does not support `nil` as it's operand",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
+            (Object::Float(_), Object::Integer(_))
+            | (Object::Integer(_), Object::Float(_))
+            | (Object::Integer(_), Object::Nil)
+            | (Object::Float(_), Object::Nil)
+            | (Object::Nil, Object::Integer(_))
+            | (Object::Nil, Object::Float(_)) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` expects same type on both side",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
         },
+
         TokenType::Slash => match (left, right) {
             (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x / y)),
             (Object::Float(x), Object::Float(y)) => Ok(Object::Float(x / y)),
-            (Object::Float(_), Object::Integer(_)) | (Object::Integer(_), Object::Float(_)) => {
-                Err(Error::new(
-                    ErrorType::CompilingError,
-                    format!(
-                        "Type mismatch, `{}` expects same type on both side",
-                        binary_expression.operator.lexeme
-                    ),
-                    binary_expression.operator.position,
-                ))
-            }
-        },
-        TokenType::Modulo => match (left, right) {
-            (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x % y)),
-            (Object::Float(_), Object::Float(_))
-            | (Object::Float(_), Object::Integer(_))
-            | (Object::Integer(_), Object::Float(_)) => Err(Error::new(
+            (Object::Nil, Object::Nil) => Err(Error::new(
                 ErrorType::CompilingError,
                 format!(
-                    "Type mismatch, `{}` expects int",
+                    "Type mismatch, `{}` does not support `nil` as it's operand",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
+            (Object::Float(_), Object::Integer(_))
+            | (Object::Integer(_), Object::Float(_))
+            | (Object::Integer(_), Object::Nil)
+            | (Object::Float(_), Object::Nil)
+            | (Object::Nil, Object::Integer(_))
+            | (Object::Nil, Object::Float(_)) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` expects same type on both side",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
+        },
+
+        TokenType::Modulo => match (left, right) {
+            (Object::Integer(x), Object::Integer(y)) => Ok(Object::Integer(x % y)),
+            (Object::Nil, Object::Nil) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` does not support `nil` as it's operand",
+                    binary_expression.operator.lexeme
+                ),
+                binary_expression.operator.position,
+            )),
+            (Object::Float(_), Object::Float(_))
+            | (Object::Float(_), Object::Integer(_))
+            | (Object::Integer(_), Object::Float(_))
+            | (Object::Integer(_), Object::Nil)
+            | (Object::Float(_), Object::Nil)
+            | (Object::Nil, Object::Integer(_))
+            | (Object::Nil, Object::Float(_)) => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` expects same type on both side",
                     binary_expression.operator.lexeme
                 ),
                 binary_expression.operator.position,
@@ -188,6 +257,14 @@ fn evaluate_unary_expression(unary_expression: UnaryExpression) -> Result<Object
         TokenType::Minus => match right {
             Object::Integer(x) => Ok(Object::Integer(x * -1)),
             Object::Float(x) => Ok(Object::Float(x * -1.0)),
+            Object::Nil => Err(Error::new(
+                ErrorType::CompilingError,
+                format!(
+                    "Type mismatch, `{}` does not support `nil` as it's operand",
+                    unary_expression.operator.lexeme
+                ),
+                unary_expression.operator.position,
+            )),
         },
 
         _ => Err(Error::new(

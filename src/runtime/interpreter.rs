@@ -76,6 +76,15 @@ impl Interpreter {
             TokenType::Plus => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x + y)),
 
+                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `boolean` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
                 (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
 
                 (Object::Nil, Object::Nil) => Err(Error::new(
@@ -99,6 +108,15 @@ impl Interpreter {
 
             TokenType::Minus => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x - y)),
+
+                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `boolean` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
 
                 (Object::String(_), Object::String(_)) => Err(Error::new(
                     ErrorType::RuntimeError,
@@ -131,6 +149,15 @@ impl Interpreter {
             TokenType::Star => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x * y)),
 
+                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `boolean` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
                 (Object::String(_), Object::String(_)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
@@ -161,6 +188,15 @@ impl Interpreter {
 
             TokenType::Slash => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x / y)),
+
+                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `boolean` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
 
                 (Object::String(_), Object::String(_)) => Err(Error::new(
                     ErrorType::RuntimeError,
@@ -241,6 +277,16 @@ impl Interpreter {
         match unary_expression.operator.ttype {
             TokenType::Minus => match right {
                 Object::Number(x) => Ok(Object::Number(x * -1.)),
+
+                Object::Boolean(_) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` does not support `boolean` as it's operand",
+                        unary_expression.operator.lexeme
+                    ),
+                    unary_expression.operator.position,
+                )),
+
                 Object::String(_) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
@@ -249,6 +295,7 @@ impl Interpreter {
                     ),
                     unary_expression.operator.position,
                 )),
+
                 Object::Nil => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(

@@ -35,6 +35,9 @@ impl Lexer {
     fn init_keywords(&mut self) {
         self.keywords.insert("let".to_string(), TokenType::Let);
         self.keywords.insert("print".to_string(), TokenType::Print);
+        self.keywords.insert("true".to_string(), TokenType::Boolean);
+        self.keywords
+            .insert("false".to_string(), TokenType::Boolean);
         self.keywords.insert("nil".to_string(), TokenType::Nil);
     }
 
@@ -107,30 +110,7 @@ impl Lexer {
 
             '\0' => Ok(Some(self.token(TokenType::EOF, None))),
 
-            '"' => {
-                self.advance();
-                loop {
-                    if self.peek() == '"' || self.peek() == '\0' {
-                        break;
-                    }
-                    self.advance();
-                }
-                if self.peek() == '"' {
-                    self.advance();
-                    let lexeme: String = self.source[self.start + 1..self.current - 1]
-                        .iter()
-                        .collect();
-                    Ok(Some(
-                        self.token(TokenType::String, Some(Object::String(lexeme))),
-                    ))
-                } else {
-                    Err(Error::new(
-                        ErrorType::LexingError,
-                        format!("Unterminated string"),
-                        self.current_position.clone(),
-                    ))
-                }
-            }
+            '"' => self.make_string(),
 
             '#' => {
                 while self.peek() != '\n' && !self.eof() {
@@ -146,40 +126,12 @@ impl Lexer {
             }
 
             _ => {
-                if current_char.is_ascii_alphabetic() {
-                    while self.peek().is_ascii_alphanumeric() {
-                        self.advance();
-                    }
-                    let lexeme: String = self.source[self.start..self.current].iter().collect();
-                    if let Some(ttype) = self.keywords.get(&lexeme) {
-                        Ok(Some(self.token(ttype.clone(), None)))
-                    } else {
-                        Ok(Some(self.token(TokenType::Identifier, None)))
-                    }
+                if self.peek().is_ascii_alphabetic() || self.peek() == '_' {
+                    self.make_identifier()
                 } else if current_char.is_ascii_digit() {
-                    while self.peek().is_ascii_digit() {
-                        self.advance();
-                    }
-                    if self.peek() == '.' {
-                        self.advance();
-                        while self.peek().is_ascii_digit() {
-                            self.advance();
-                        }
-                    }
-                    let lexeme: String = self.source[self.start..self.current].iter().collect();
-                    if let Ok(float) = lexeme.parse() {
-                        Ok(Some(
-                            self.token(TokenType::Number, Some(Object::Number(float))),
-                        ))
-                    } else {
-                        self.current_position.column += 1; // Putting cursor after charecter.
-                        Err(Error::new(
-                            ErrorType::LexingError,
-                            format!("could not parse {} to float", lexeme),
-                            self.current_position.clone(),
-                        ))
-                    }
+                    self.make_number()
                 } else {
+                    println!("{}", self.peek());
                     self.current_position.column += 1; // Putting cursor after charecter.
                     Err(Error::new(
                         ErrorType::LexingError,
@@ -188,6 +140,78 @@ impl Lexer {
                     ))
                 }
             }
+        }
+    }
+
+    fn make_string(&mut self) -> Result<Option<Token>, Error> {
+        self.advance();
+        loop {
+            if self.peek() == '"' || self.peek() == '\0' {
+                break;
+            }
+            self.advance();
+        }
+        if self.peek() == '"' {
+            self.advance();
+            let lexeme: String = self.source[self.start + 1..self.current - 1]
+                .iter()
+                .collect();
+            Ok(Some(
+                self.token(TokenType::String, Some(Object::String(lexeme))),
+            ))
+        } else {
+            Err(Error::new(
+                ErrorType::LexingError,
+                format!("Unterminated string"),
+                self.current_position.clone(),
+            ))
+        }
+    }
+
+    fn make_number(&mut self) -> Result<Option<Token>, Error> {
+        while self.peek().is_ascii_digit() {
+            self.advance();
+        }
+        if self.peek() == '.' {
+            self.advance();
+            while self.peek().is_ascii_digit() {
+                self.advance();
+            }
+        }
+        let lexeme: String = self.source[self.start..self.current].iter().collect();
+        if let Ok(float) = lexeme.parse() {
+            Ok(Some(
+                self.token(TokenType::Number, Some(Object::Number(float))),
+            ))
+        } else {
+            self.current_position.column += 1; // Putting cursor after charecter.
+            Err(Error::new(
+                ErrorType::LexingError,
+                format!("could not parse {} to float", lexeme),
+                self.current_position.clone(),
+            ))
+        }
+    }
+
+    fn make_identifier(&mut self) -> Result<Option<Token>, Error> {
+        while self.peek().is_ascii_alphanumeric() || self.peek() == '_' {
+            self.advance();
+        }
+        let lexeme: String = self.source[self.start..self.current].iter().collect();
+        if let Some(ttype) = self.keywords.get(&lexeme) {
+            if ttype == &TokenType::Boolean && lexeme == "true" {
+                Ok(Some(
+                    self.token(TokenType::Boolean, Some(Object::Boolean(true))),
+                ))
+            } else if ttype == &TokenType::Boolean && lexeme == "false" {
+                Ok(Some(
+                    self.token(TokenType::Boolean, Some(Object::Boolean(false))),
+                ))
+            } else {
+                Ok(Some(self.token(ttype.clone(), None)))
+            }
+        } else {
+            Ok(Some(self.token(TokenType::Identifier, None)))
         }
     }
 }

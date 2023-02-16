@@ -7,6 +7,7 @@ pub enum TokenType {
     Identifier,
     Number,
     String,
+    Boolean,
     Nil,
 
     Plus,
@@ -34,6 +35,7 @@ impl Display for TokenType {
             Self::Identifier => write!(f, "identifier"),
             Self::Number => write!(f, "number"),
             Self::String => write!(f, "string"),
+            Self::Boolean => write!(f, "boolean"),
             Self::Nil => write!(f, "nil"),
 
             Self::Plus => write!(f, "+"),

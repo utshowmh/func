@@ -108,7 +108,26 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
-        self.additive()
+        self.equality()
+    }
+
+    fn equality(&mut self) -> Result<Expression, Error> {
+        let mut left = self.additive()?;
+
+        while self.does_match(&[
+            TokenType::EqualEqual,
+            TokenType::NotEqual,
+            TokenType::Greater,
+            TokenType::GreaterEqual,
+            TokenType::Less,
+            TokenType::LessEqual,
+        ]) {
+            let operator = self.next_token();
+            let right = self.additive()?;
+            left = Expression::Binary(BinaryExpression::new(left, operator, right));
+        }
+
+        return Ok(left);
     }
 
     fn additive(&mut self) -> Result<Expression, Error> {
@@ -136,7 +155,7 @@ impl Parser {
     }
 
     fn unary(&mut self) -> Result<Expression, Error> {
-        while self.does_match(&[TokenType::Minus]) {
+        while self.does_match(&[TokenType::Minus, TokenType::Not]) {
             let operator = self.next_token();
             let right = self.primary()?;
             return Ok(Expression::Unary(UnaryExpression::new(operator, right)));

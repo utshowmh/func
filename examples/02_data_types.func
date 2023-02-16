@@ -2,7 +2,7 @@ let nothing = nil
 let everything = "cosmos"
 let is_real = true
 let age = 14.6
-let xs = 5
+
 print(nothing)
 print(everything)
 print(is_real)

@@ -88,8 +88,6 @@ impl Lexer {
         match current_char {
             ' ' | '\t' | '\r' => Ok(None),
 
-            '=' => Ok(Some(self.token(TokenType::Equal, None))),
-
             '+' => Ok(Some(self.token(TokenType::Plus, None))),
 
             '-' => Ok(Some(self.token(TokenType::Minus, None))),
@@ -112,21 +110,48 @@ impl Lexer {
 
             '"' => self.make_string(),
 
-            '#' => {
-                while self.peek() != '\n' && !self.eof() {
+            '#' => self.ignore_comment(),
+
+            '\n' => self.count_newline(),
+
+            '=' => {
+                if self.peek() == '=' {
                     self.advance();
+                    Ok(Some(self.token(TokenType::EqualEqual, None)))
+                } else {
+                    Ok(Some(self.token(TokenType::Equal, None)))
                 }
-                Ok(None)
             }
 
-            '\n' => {
-                self.current_position.row += 1;
-                self.current_position.column = 0;
-                Ok(None)
+            '!' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Ok(Some(self.token(TokenType::NotEqual, None)))
+                } else {
+                    Ok(Some(self.token(TokenType::Not, None)))
+                }
+            }
+
+            '>' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Ok(Some(self.token(TokenType::GreaterEqual, None)))
+                } else {
+                    Ok(Some(self.token(TokenType::Greater, None)))
+                }
+            }
+
+            '<' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Ok(Some(self.token(TokenType::LessEqual, None)))
+                } else {
+                    Ok(Some(self.token(TokenType::Less, None)))
+                }
             }
 
             _ => {
-                if self.peek().is_ascii_alphabetic() || self.peek() == '_' {
+                if current_char.is_ascii_alphabetic() || current_char == '_' {
                     self.make_identifier()
                 } else if current_char.is_ascii_digit() {
                     self.make_number()
@@ -141,6 +166,19 @@ impl Lexer {
                 }
             }
         }
+    }
+
+    fn count_newline(&mut self) -> Result<Option<Token>, Error> {
+        self.current_position.row += 1;
+        self.current_position.column = 0;
+        Ok(None)
+    }
+
+    fn ignore_comment(&mut self) -> Result<Option<Token>, Error> {
+        while self.peek() != '\n' && !self.eof() {
+            self.advance();
+        }
+        Ok(None)
     }
 
     fn make_string(&mut self) -> Result<Option<Token>, Error> {

@@ -1,10 +1,22 @@
 let x = 42
 let y = 9
 
-print("func_" + "operators:")
+# Arithmetic Operators
 
 print(x + y)
 print(x - y)
 print(x * y)
 print(x / y)
 print(x % y)
+
+# Comparison Operators
+print(x == y)
+print(x != y)
+print(x > y)
+print(x >= y)
+print(x < y)
+print(x <= y)
+
+# Unary Operators
+print(-5)
+print(!5)

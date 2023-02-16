@@ -73,6 +73,142 @@ impl Interpreter {
         let right = self.match_expression(*binary_expression.right)?;
 
         match binary_expression.operator.ttype {
+            TokenType::EqualEqual => Ok(Object::Boolean(left == right)),
+
+            TokenType::NotEqual => Ok(Object::Boolean(left != right)),
+
+            TokenType::Greater => match (left, right) {
+                (Object::Number(x), Object::Number(y)) => Ok(Object::Boolean(x > y)),
+
+                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `boolean` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+
+                (Object::Nil, Object::Nil) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+            },
+
+            TokenType::GreaterEqual => match (left, right) {
+                (Object::Number(x), Object::Number(y)) => Ok(Object::Boolean(x >= y)),
+
+                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `boolean` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+
+                (Object::Nil, Object::Nil) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+            },
+
+            TokenType::Less => match (left, right) {
+                (Object::Number(x), Object::Number(y)) => Ok(Object::Boolean(x < y)),
+
+                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `boolean` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+
+                (Object::Nil, Object::Nil) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+            },
+
+            TokenType::LessEqual => match (left, right) {
+                (Object::Number(x), Object::Number(y)) => Ok(Object::Boolean(x <= y)),
+
+                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `boolean` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+
+                (Object::Nil, Object::Nil) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` doesn't support `nil` as it's operand",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+
+                _ => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` expects same type on both side",
+                        binary_expression.operator.lexeme
+                    ),
+                    binary_expression.operator.position,
+                )),
+            },
+
             TokenType::Plus => match (left, right) {
                 (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x + y)),
 
@@ -275,6 +411,8 @@ impl Interpreter {
         let right = self.match_expression(*unary_expression.right)?;
 
         match unary_expression.operator.ttype {
+            TokenType::Not => Ok(Object::Boolean(!right.is_truthy())),
+
             TokenType::Minus => match right {
                 Object::Number(x) => Ok(Object::Number(x * -1.)),
 

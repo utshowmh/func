@@ -16,12 +16,19 @@ pub enum TokenType {
     Slash,
     Modulo,
 
+    Equal,
+    EqualEqual,
+    Not,
+    NotEqual,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
+
     OpenParen,
     CloseParen,
     OpenCurly,
     CloseCurly,
-
-    Equal,
 
     Let,
     Print,
@@ -44,12 +51,19 @@ impl Display for TokenType {
             Self::Slash => write!(f, "/"),
             Self::Modulo => write!(f, "%"),
 
+            Self::Equal => write!(f, "="),
+            Self::EqualEqual => write!(f, "=="),
+            Self::Not => write!(f, "!"),
+            Self::NotEqual => write!(f, "!="),
+            Self::Greater => write!(f, ">"),
+            Self::GreaterEqual => write!(f, ">="),
+            Self::Less => write!(f, "<"),
+            Self::LessEqual => write!(f, "<="),
+
             Self::OpenParen => write!(f, "("),
             Self::CloseParen => write!(f, ")"),
             Self::OpenCurly => write!(f, "{{"),
             Self::CloseCurly => write!(f, "}}"),
-
-            Self::Equal => write!(f, "="),
 
             Self::Let => write!(f, "let"),
             Self::Print => write!(f, "print"),

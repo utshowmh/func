@@ -5,7 +5,7 @@ program         ->      stmt* comment*
 
 comment         ->      "#" ... "\n"
 
-stmt            ->      let_stmt | print_stmt | block_stmt
+stmt            ->      let_stmt | print_stmt | block_stmt | expr
 
 let_stmt        ->      "let" ident "=" expr
 print_stmt      ->      "print" "(" expr ")"

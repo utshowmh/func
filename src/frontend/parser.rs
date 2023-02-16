@@ -70,11 +70,7 @@ impl Parser {
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
             TokenType::Print => Ok(Statement::Print(self.print_statement()?)),
             TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
-            _ => Err(Error::new(
-                ErrorType::ParsingError,
-                format!("Expression is not used."),
-                self.peek().position,
-            )),
+            _ => Ok(Statement::Expression(self.expression()?)),
         }
     }
 
@@ -112,11 +108,21 @@ impl Parser {
     }
 
     fn equality(&mut self) -> Result<Expression, Error> {
+        let mut left = self.comparison()?;
+
+        while self.does_match(&[TokenType::EqualEqual, TokenType::NotEqual]) {
+            let operator = self.next_token();
+            let right = self.comparison()?;
+            left = Expression::Binary(BinaryExpression::new(left, operator, right));
+        }
+
+        return Ok(left);
+    }
+
+    fn comparison(&mut self) -> Result<Expression, Error> {
         let mut left = self.additive()?;
 
         while self.does_match(&[
-            TokenType::EqualEqual,
-            TokenType::NotEqual,
             TokenType::Greater,
             TokenType::GreaterEqual,
             TokenType::Less,

@@ -7,6 +7,7 @@ pub enum Statement {
     Let(LetStatement),
     Print(PrintStatement),
     Block(BlockStatement),
+    Expression(Expression),
 }
 
 #[derive(Debug)]

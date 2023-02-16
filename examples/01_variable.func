@@ -1,4 +1,5 @@
 let x = 9
 let y = 42
 
+print("(9 - 42) / 9 + 42 * 9 is:")
 print((x - y) / x + y * x)

@@ -1,22 +1,35 @@
 let x = 42
 let y = 9
+print("x = 42, y = 9")
 
 # Arithmetic Operators
-
+print("x + y is:")
 print(x + y)
+print("x - y is:")
 print(x - y)
+print("x * y is:")
 print(x * y)
+print("x / y is:")
 print(x / y)
+print("x % y is:")
 print(x % y)
 
 # Comparison Operators
+print("x == y is: ")
 print(x == y)
+print("x != y is: ")
 print(x != y)
+print("x > y is: ")
 print(x > y)
+print("x >= y is: ")
 print(x >= y)
+print("x < y is: ")
 print(x < y)
+print("x <= y is: ")
 print(x <= y)
 
 # Unary Operators
-print(-5)
-print(!5)
+print("-x is:")
+print(-x)
+print("!x is:")
+print(!x)

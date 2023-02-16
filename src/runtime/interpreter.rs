@@ -33,6 +33,7 @@ impl Interpreter {
             Statement::Let(let_statement) => self.execute_let_statement(let_statement),
             Statement::Print(print_statement) => self.execute_print_statement(print_statement),
             Statement::Block(block_statement) => self.execute_block_statement(block_statement),
+            Statement::Expression(expression) => self.execute_expression(expression),
         }
     }
 
@@ -57,6 +58,11 @@ impl Interpreter {
             self.execute_statements(statement)?;
         }
         self.environment = old_environment;
+        Ok(())
+    }
+
+    fn execute_expression(&self, expression: Expression) -> Result<(), Error> {
+        self.evaluate_expression(expression)?;
         Ok(())
     }
 

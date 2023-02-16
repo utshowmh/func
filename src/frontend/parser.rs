@@ -104,7 +104,31 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
-        self.equality()
+        self.and()
+    }
+
+    fn and(&mut self) -> Result<Expression, Error> {
+        let mut left = self.or()?;
+
+        while self.does_match(&[TokenType::And]) {
+            let operator = self.next_token();
+            let right = self.or()?;
+            left = Expression::Binary(BinaryExpression::new(left, operator, right));
+        }
+
+        return Ok(left);
+    }
+
+    fn or(&mut self) -> Result<Expression, Error> {
+        let mut left = self.equality()?;
+
+        while self.does_match(&[TokenType::Or]) {
+            let operator = self.next_token();
+            let right = self.equality()?;
+            left = Expression::Binary(BinaryExpression::new(left, operator, right));
+        }
+
+        return Ok(left);
     }
 
     fn equality(&mut self) -> Result<Expression, Error> {

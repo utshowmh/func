@@ -150,13 +150,40 @@ impl Lexer {
                 }
             }
 
+            '&' => {
+                if self.peek() == '&' {
+                    self.advance();
+                    Ok(Some(self.token(TokenType::And, None)))
+                } else {
+                    self.current_position.column += 1; // Putting cursor after charecter.
+                    Err(Error::new(
+                        ErrorType::LexingError,
+                        format!("Unexpected charected `{}`", current_char),
+                        self.current_position.clone(),
+                    ))
+                }
+            }
+
+            '|' => {
+                if self.peek() == '|' {
+                    self.advance();
+                    Ok(Some(self.token(TokenType::Or, None)))
+                } else {
+                    self.current_position.column += 1; // Putting cursor after charecter.
+                    Err(Error::new(
+                        ErrorType::LexingError,
+                        format!("Unexpected charected `{}`", current_char),
+                        self.current_position.clone(),
+                    ))
+                }
+            }
+
             _ => {
                 if current_char.is_ascii_alphabetic() || current_char == '_' {
                     self.make_identifier()
                 } else if current_char.is_ascii_digit() {
                     self.make_number()
                 } else {
-                    println!("{}", self.peek());
                     self.current_position.column += 1; // Putting cursor after charecter.
                     Err(Error::new(
                         ErrorType::LexingError,

@@ -24,6 +24,8 @@ pub enum TokenType {
     GreaterEqual,
     Less,
     LessEqual,
+    And,
+    Or,
 
     OpenParen,
     CloseParen,
@@ -59,6 +61,8 @@ impl Display for TokenType {
             Self::GreaterEqual => write!(f, ">="),
             Self::Less => write!(f, "<"),
             Self::LessEqual => write!(f, "<="),
+            Self::And => write!(f, "&&"),
+            Self::Or => write!(f, "||"),
 
             Self::OpenParen => write!(f, "("),
             Self::CloseParen => write!(f, ")"),

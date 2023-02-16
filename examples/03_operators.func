@@ -33,3 +33,10 @@ print("-x is:")
 print(-x)
 print("!x is:")
 print(!x)
+
+
+# Logical Operators
+print("x && y is:")
+print(x && y)
+print("x || y is:")
+print(y || y)

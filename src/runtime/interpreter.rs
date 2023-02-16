@@ -79,6 +79,10 @@ impl Interpreter {
         let right = self.match_expression(*binary_expression.right)?;
 
         match binary_expression.operator.ttype {
+            TokenType::And => Ok(Object::Boolean(left.is_truthy() && right.is_truthy())),
+
+            TokenType::Or => Ok(Object::Boolean(left.is_truthy() || right.is_truthy())),
+
             TokenType::EqualEqual => Ok(Object::Boolean(left == right)),
 
             TokenType::NotEqual => Ok(Object::Boolean(left != right)),

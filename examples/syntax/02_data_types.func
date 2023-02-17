@@ -4,6 +4,6 @@ let is_real = true
 let age = 14.6
 
 print("let nothing = nil :", nothing, "\n")
-print("let everything = cosmos :", everything, "\n")        # Can't use " inside of a string.
+print("let everything = cosmos :", everything, "\n")        // Can't use " inside of a string.
 print("let is_real = true :", is_real, "\n")
 print("let age = 14.6 :", age, "\n")

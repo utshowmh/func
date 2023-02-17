@@ -96,8 +96,6 @@ impl Lexer {
 
             '*' => Ok(Some(self.token(TokenType::Star, None))),
 
-            '/' => Ok(Some(self.token(TokenType::Slash, None))),
-
             '%' => Ok(Some(self.token(TokenType::Modulo, None))),
 
             ',' => Ok(Some(self.token(TokenType::Comma, None))),
@@ -114,9 +112,16 @@ impl Lexer {
 
             '"' => self.make_string(),
 
-            '#' => self.ignore_comment(),
-
             '\n' => self.count_newline(),
+
+            '/' => {
+                if self.peek() == '/' {
+                    self.advance();
+                    self.ignore_comment()
+                } else {
+                    Ok(Some(self.token(TokenType::Slash, None)))
+                }
+            }
 
             '=' => {
                 if self.peek() == '=' {

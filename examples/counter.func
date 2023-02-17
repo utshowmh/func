@@ -1,12 +1,9 @@
-let count = 0
-let limit = 10
-
-func count() {
-    print("count is: ", count, "\n")
-    if count < limit {
-        count = count + 1
-        count()
+func count(start, end) {
+    print("count is: ", start, "\n")
+    if start != end {
+        start = start + 1
+        count(start, end)
     }
 }
 
-count()
+count(1 , 10)

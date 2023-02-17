@@ -3,7 +3,7 @@
 ```
 program         ->      stmt* comment*
 
-comment         ->      "#" ... "\n"
+comment         ->      "//" ... "\n"
 
 stmt            ->      let_stmt | assignment_stmt | print_stmt | block_stmt | if_stmt | func_stmt | expr 
 

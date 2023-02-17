@@ -28,7 +28,7 @@ impl Lexer {
             start: 0,
             current: 0,
 
-            current_position: Position::new(source_path, 0, 1),
+            current_position: Position::new(source_path, 1),
         }
     }
 
@@ -76,7 +76,6 @@ impl Lexer {
     fn advance(&mut self) {
         if !self.eof() {
             self.current += 1;
-            self.current_position.column += 1;
         }
     }
 
@@ -160,7 +159,6 @@ impl Lexer {
                     self.advance();
                     Ok(Some(self.token(TokenType::And, None)))
                 } else {
-                    self.current_position.column += 1; // Putting cursor after charecter.
                     Err(Error::new(
                         ErrorType::LexingError,
                         format!("Unexpected charected `{}`", current_char),
@@ -174,7 +172,6 @@ impl Lexer {
                     self.advance();
                     Ok(Some(self.token(TokenType::Or, None)))
                 } else {
-                    self.current_position.column += 1; // Putting cursor after charecter.
                     Err(Error::new(
                         ErrorType::LexingError,
                         format!("Unexpected charected `{}`", current_char),
@@ -189,7 +186,6 @@ impl Lexer {
                 } else if current_char.is_ascii_digit() {
                     self.make_number()
                 } else {
-                    self.current_position.column += 1; // Putting cursor after charecter.
                     Err(Error::new(
                         ErrorType::LexingError,
                         format!("Unexpected charected `{}`", current_char),
@@ -202,7 +198,6 @@ impl Lexer {
 
     fn count_newline(&mut self) -> Result<Option<Token>, Error> {
         self.current_position.row += 1;
-        self.current_position.column = 0;
         Ok(None)
     }
 
@@ -254,7 +249,6 @@ impl Lexer {
                 self.token(TokenType::Number, Some(Object::Number(float))),
             ))
         } else {
-            self.current_position.column += 1; // Putting cursor after charecter.
             Err(Error::new(
                 ErrorType::LexingError,
                 format!("could not parse {} to float", lexeme),

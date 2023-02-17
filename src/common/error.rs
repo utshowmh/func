@@ -35,12 +35,8 @@ impl Error {
 
     pub fn report(&self) {
         eprintln!(
-            "{}: {} in line {}:{} (file: {}).",
-            self.e_type,
-            self.message,
-            self.position.row,
-            self.position.column,
-            self.position.source_path
+            "{}: {} in line {} (file: {}).",
+            self.e_type, self.message, self.position.row, self.position.source_path
         );
     }
 }

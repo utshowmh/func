@@ -5,6 +5,7 @@ pub type Program = Vec<Statement>;
 #[derive(Debug, Clone)]
 pub enum Statement {
     Let(LetStatement),
+    Assignment(AssignmentStatement),
     Print(PrintStatement),
     Block(BlockStatement),
     If(IfStatement),
@@ -25,6 +26,21 @@ pub struct LetStatement {
 }
 
 impl LetStatement {
+    pub fn new(identifier: Token, expression: Expression) -> Self {
+        Self {
+            identifier,
+            expression,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct AssignmentStatement {
+    pub identifier: Token,
+    pub expression: Expression,
+}
+
+impl AssignmentStatement {
     pub fn new(identifier: Token, expression: Expression) -> Self {
         Self {
             identifier,

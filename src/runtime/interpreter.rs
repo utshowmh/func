@@ -1,8 +1,8 @@
 use crate::common::{
     ast::{
-        BinaryExpression, BlockStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
-        GroupExpression, IdentifierExpression, IfStatement, LetStatement, PrintStatement, Program,
-        Statement, UnaryExpression,
+        AssignmentStatement, BinaryExpression, BlockStatement, CallExpression, ElseBlock,
+        Expression, FunctionStatement, GroupExpression, IdentifierExpression, IfStatement,
+        LetStatement, PrintStatement, Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     object::Object,
@@ -35,6 +35,10 @@ impl Interpreter {
         match statement {
             Statement::Let(let_statement) => self.execute_let_statement(let_statement),
 
+            Statement::Assignment(assignment_statement) => {
+                self.execute_assignment_statement(assignment_statement)
+            }
+
             Statement::Function(function_statement) => {
                 self.define_function_statement(function_statement)
             }
@@ -52,6 +56,18 @@ impl Interpreter {
     fn execute_let_statement(&mut self, let_statement: LetStatement) -> Result<(), Error> {
         let identifier = let_statement.identifier;
         let value = self.evaluate_expression(let_statement.expression)?;
+        self.variables.put(identifier, value);
+
+        Ok(())
+    }
+
+    fn execute_assignment_statement(
+        &mut self,
+        assignment_statement: AssignmentStatement,
+    ) -> Result<(), Error> {
+        let identifier = assignment_statement.identifier;
+        self.variables.get(identifier.clone())?;
+        let value = self.evaluate_expression(assignment_statement.expression)?;
         self.variables.put(identifier, value);
 
         Ok(())

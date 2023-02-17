@@ -1,8 +1,8 @@
 use crate::common::{
     ast::{
-        BinaryExpression, BlockStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
-        GroupExpression, IdentifierExpression, IfStatement, LetStatement, LiteralExpression,
-        PrintStatement, Program, Statement, UnaryExpression,
+        AssignmentStatement, BinaryExpression, BlockStatement, CallExpression, ElseBlock,
+        Expression, FunctionStatement, GroupExpression, IdentifierExpression, IfStatement,
+        LetStatement, LiteralExpression, PrintStatement, Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -30,6 +30,11 @@ impl Parser {
 
     fn peek(&self) -> Token {
         self.tokens[self.current].clone()
+    }
+
+    // It can go wrong, so rebember where it's being used.
+    fn peek_next(&self) -> Token {
+        self.tokens[self.current + 1].clone()
     }
 
     fn eof(&self) -> bool {
@@ -73,7 +78,15 @@ impl Parser {
             TokenType::If => Ok(Statement::If(self.if_statement()?)),
             TokenType::Print => Ok(Statement::Print(self.print_statement()?)),
             TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
-            _ => Ok(Statement::Expression(self.expression()?)),
+            current_ttype => {
+                if current_ttype == TokenType::Identifier
+                    && self.peek_next().ttype == TokenType::Equal
+                {
+                    Ok(Statement::Assignment(self.assignment_statement()?))
+                } else {
+                    Ok(Statement::Expression(self.expression()?))
+                }
+            }
         }
     }
 
@@ -84,6 +97,14 @@ impl Parser {
         let expression = self.expression()?;
 
         Ok(LetStatement::new(identifier, expression))
+    }
+
+    fn assignment_statement(&mut self) -> Result<AssignmentStatement, Error> {
+        let identifier = self.eat(TokenType::Identifier)?;
+        self.eat(TokenType::Equal)?;
+        let expression = self.expression()?;
+
+        Ok(AssignmentStatement::new(identifier, expression))
     }
 
     fn function_statement(&mut self) -> Result<FunctionStatement, Error> {

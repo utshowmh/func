@@ -27,6 +27,8 @@ pub enum TokenType {
     And,
     Or,
 
+    Comma,
+
     OpenParen,
     CloseParen,
     OpenCurly,
@@ -66,6 +68,8 @@ impl Display for TokenType {
             Self::LessEqual => write!(f, "<="),
             Self::And => write!(f, "&&"),
             Self::Or => write!(f, "||"),
+
+            Self::Comma => write!(f, ","),
 
             Self::OpenParen => write!(f, "("),
             Self::CloseParen => write!(f, ")"),

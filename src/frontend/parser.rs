@@ -137,9 +137,17 @@ impl Parser {
     fn print_statement(&mut self) -> Result<PrintStatement, Error> {
         self.advance();
         self.eat(TokenType::OpenParen)?;
-        let expression = self.expression()?;
+        let mut args = Vec::new();
+        loop {
+            args.push(self.expression()?);
+            if self.does_match(&[TokenType::Comma]) {
+                self.advance();
+            } else {
+                break;
+            }
+        }
         self.eat(TokenType::CloseParen)?;
-        Ok(PrintStatement::new(expression))
+        Ok(PrintStatement::new(args))
     }
 
     fn block_statement(&mut self) -> Result<BlockStatement, Error> {

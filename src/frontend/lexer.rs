@@ -101,6 +101,8 @@ impl Lexer {
 
             '%' => Ok(Some(self.token(TokenType::Modulo, None))),
 
+            ',' => Ok(Some(self.token(TokenType::Comma, None))),
+
             '(' => Ok(Some(self.token(TokenType::OpenParen, None))),
 
             ')' => Ok(Some(self.token(TokenType::CloseParen, None))),

@@ -2,8 +2,7 @@ let count = 0
 let limit = 10
 
 func count() {
-    print("count is: ")
-    print(count)
+    print("count is: ", count, "\n")
     if count < limit {
         count = count + 1
         count()

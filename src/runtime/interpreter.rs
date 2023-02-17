@@ -108,8 +108,9 @@ impl Interpreter {
     }
 
     fn execute_print_statement(&mut self, print_statement: PrintStatement) -> Result<(), Error> {
-        let value = self.evaluate_expression(print_statement.expression)?;
-        println!("{}", value);
+        for arg in print_statement.args {
+            print!("{}", self.evaluate_expression(arg)?);
+        }
 
         Ok(())
     }

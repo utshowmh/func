@@ -51,12 +51,12 @@ impl AssignmentStatement {
 
 #[derive(Debug, Clone)]
 pub struct PrintStatement {
-    pub expression: Expression,
+    pub args: Vec<Expression>,
 }
 
 impl PrintStatement {
-    pub fn new(expression: Expression) -> Self {
-        Self { expression }
+    pub fn new(args: Vec<Expression>) -> Self {
+        Self { args }
     }
 }
 

@@ -2,22 +2,23 @@ use super::token::Token;
 
 pub type Program = Vec<Statement>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
     Let(LetStatement),
     Print(PrintStatement),
     Block(BlockStatement),
     If(IfStatement),
+    Function(FunctionStatement),
     Expression(Expression),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ElseBlock {
     Block(BlockStatement),
     If(IfStatement),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LetStatement {
     pub identifier: Token,
     pub expression: Expression,
@@ -32,7 +33,7 @@ impl LetStatement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PrintStatement {
     pub expression: Expression,
 }
@@ -43,7 +44,7 @@ impl PrintStatement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockStatement {
     pub statements: Box<Vec<Statement>>,
 }
@@ -56,7 +57,7 @@ impl BlockStatement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IfStatement {
     pub condition: Expression,
     pub if_block: BlockStatement,
@@ -77,16 +78,29 @@ impl IfStatement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+pub struct FunctionStatement {
+    pub identifier: Token,
+    pub block: BlockStatement,
+}
+
+impl FunctionStatement {
+    pub fn new(identifier: Token, block: BlockStatement) -> Self {
+        Self { identifier, block }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub enum Expression {
     Binary(BinaryExpression),
     Unary(UnaryExpression),
     Group(GroupExpression),
+    Call(CallExpression),
     Identifier(IdentifierExpression),
     Literal(LiteralExpression),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BinaryExpression {
     pub left: Box<Expression>,
     pub operator: Token,
@@ -103,7 +117,7 @@ impl BinaryExpression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnaryExpression {
     pub operator: Token,
     pub right: Box<Expression>,
@@ -118,7 +132,7 @@ impl UnaryExpression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GroupExpression {
     pub child: Box<Expression>,
 }
@@ -131,7 +145,18 @@ impl GroupExpression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+pub struct CallExpression {
+    pub identifier: Token,
+}
+
+impl CallExpression {
+    pub fn new(identifier: Token) -> Self {
+        Self { identifier }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct IdentifierExpression {
     pub identifier: Token,
 }
@@ -142,7 +167,7 @@ impl IdentifierExpression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LiteralExpression {
     pub object: Token,
 }

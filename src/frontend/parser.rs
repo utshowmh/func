@@ -1,8 +1,8 @@
 use crate::common::{
     ast::{
-        BinaryExpression, BlockStatement, ElseBlock, Expression, GroupExpression,
-        IdentifierExpression, IfStatement, LetStatement, LiteralExpression, PrintStatement,
-        Program, Statement, UnaryExpression,
+        BinaryExpression, BlockStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
+        GroupExpression, IdentifierExpression, IfStatement, LetStatement, LiteralExpression,
+        PrintStatement, Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -68,6 +68,7 @@ impl Parser {
 
     fn statemet(&mut self) -> Result<Statement, Error> {
         match self.peek().ttype {
+            TokenType::Func => Ok(Statement::Function(self.function_statement()?)),
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
             TokenType::If => Ok(Statement::If(self.if_statement()?)),
             TokenType::Print => Ok(Statement::Print(self.print_statement()?)),
@@ -81,7 +82,18 @@ impl Parser {
         let identifier = self.eat(TokenType::Identifier)?;
         self.eat(TokenType::Equal)?;
         let expression = self.expression()?;
+
         Ok(LetStatement::new(identifier, expression))
+    }
+
+    fn function_statement(&mut self) -> Result<FunctionStatement, Error> {
+        self.advance();
+        let identifier = self.eat(TokenType::Identifier)?;
+        self.eat(TokenType::OpenParen)?;
+        self.eat(TokenType::CloseParen)?;
+        let block = self.block_statement()?;
+
+        Ok(FunctionStatement::new(identifier, block))
     }
 
     fn if_statement(&mut self) -> Result<IfStatement, Error> {
@@ -223,9 +235,16 @@ impl Parser {
                 self.next_token(),
             )))
         } else if self.does_match(&[TokenType::Identifier]) {
-            Ok(Expression::Identifier(IdentifierExpression::new(
-                self.next_token(),
-            )))
+            let identifier = self.next_token();
+            if self.does_match(&[TokenType::OpenParen]) {
+                self.advance();
+                self.eat(TokenType::CloseParen)?;
+                Ok(Expression::Call(CallExpression::new(identifier)))
+            } else {
+                Ok(Expression::Identifier(IdentifierExpression::new(
+                    identifier,
+                )))
+            }
         } else if self.does_match(&[TokenType::OpenParen]) {
             self.advance();
             let child = self.expression()?;

@@ -1,17 +1,18 @@
 use std::collections::HashMap;
 
 use crate::common::{
+    ast::FunctionStatement,
     error::{Error, ErrorType},
     object::Object,
     token::Token,
 };
 
-#[derive(Clone)]
-pub struct Environment {
+#[derive(Debug, Clone)]
+pub struct VariableBindings {
     bindings: HashMap<String, Object>,
 }
 
-impl Environment {
+impl VariableBindings {
     pub fn new() -> Self {
         Self {
             bindings: HashMap::new(),
@@ -29,6 +30,35 @@ impl Environment {
             Err(Error::new(
                 ErrorType::RuntimeError,
                 format!("Variable `{}` doesn't exist.", identifier.lexeme),
+                identifier.position,
+            ))
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct FunctionBindings {
+    bindings: HashMap<String, FunctionStatement>,
+}
+
+impl FunctionBindings {
+    pub fn new() -> Self {
+        Self {
+            bindings: HashMap::new(),
+        }
+    }
+
+    pub fn put(&mut self, identifier: Token, value: FunctionStatement) {
+        self.bindings.insert(identifier.lexeme, value);
+    }
+
+    pub fn get(&self, identifier: Token) -> Result<FunctionStatement, Error> {
+        if let Some(value) = self.bindings.get(&identifier.lexeme) {
+            Ok(value.clone())
+        } else {
+            Err(Error::new(
+                ErrorType::RuntimeError,
+                format!("Function `{}` doesn't exist.", identifier.lexeme),
                 identifier.position,
             ))
         }

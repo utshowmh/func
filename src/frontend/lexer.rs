@@ -34,6 +34,7 @@ impl Lexer {
 
     fn init_keywords(&mut self) {
         self.keywords.insert("let".to_string(), TokenType::Let);
+        self.keywords.insert("func".to_string(), TokenType::Func);
         self.keywords.insert("print".to_string(), TokenType::Print);
         self.keywords.insert("if".to_string(), TokenType::If);
         self.keywords.insert("else".to_string(), TokenType::Else);

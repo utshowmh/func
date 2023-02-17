@@ -33,6 +33,7 @@ pub enum TokenType {
     CloseCurly,
 
     Let,
+    Func,
     If,
     Else,
     Print,
@@ -72,6 +73,7 @@ impl Display for TokenType {
             Self::CloseCurly => write!(f, "}}"),
 
             Self::Let => write!(f, "let"),
+            Self::Func => write!(f, "func"),
             Self::If => write!(f, "if"),
             Self::Else => write!(f, "else"),
             Self::Print => write!(f, "print"),

@@ -1,24 +1,26 @@
 use crate::common::{
     ast::{
-        BinaryExpression, BlockStatement, ElseBlock, Expression, GroupExpression,
-        IdentifierExpression, IfStatement, LetStatement, PrintStatement, Program, Statement,
-        UnaryExpression,
+        BinaryExpression, BlockStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
+        GroupExpression, IdentifierExpression, IfStatement, LetStatement, PrintStatement, Program,
+        Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     object::Object,
     token::TokenType,
 };
 
-use super::environment::Environment;
+use super::environment::{FunctionBindings, VariableBindings};
 
 pub struct Interpreter {
-    environment: Environment,
+    variables: VariableBindings,
+    functions: FunctionBindings,
 }
 
 impl Interpreter {
     pub fn new() -> Self {
         Self {
-            environment: Environment::new(),
+            variables: VariableBindings::new(),
+            functions: FunctionBindings::new(),
         }
     }
 
@@ -32,9 +34,17 @@ impl Interpreter {
     fn execute_statement(&mut self, statement: Statement) -> Result<(), Error> {
         match statement {
             Statement::Let(let_statement) => self.execute_let_statement(let_statement),
+
+            Statement::Function(function_statement) => {
+                self.define_function_statement(function_statement)
+            }
+
             Statement::If(if_statement) => self.execute_if_statement(if_statement),
+
             Statement::Print(print_statement) => self.execute_print_statement(print_statement),
+
             Statement::Block(block_statement) => self.execute_block_statement(block_statement),
+
             Statement::Expression(expression) => self.execute_expression(expression),
         }
     }
@@ -42,7 +52,7 @@ impl Interpreter {
     fn execute_let_statement(&mut self, let_statement: LetStatement) -> Result<(), Error> {
         let identifier = let_statement.identifier;
         let value = self.evaluate_expression(let_statement.expression)?;
-        self.environment.put(identifier, value);
+        self.variables.put(identifier, value);
 
         Ok(())
     }
@@ -65,7 +75,23 @@ impl Interpreter {
         Ok(())
     }
 
-    fn execute_print_statement(&self, print_statement: PrintStatement) -> Result<(), Error> {
+    fn define_function_statement(
+        &mut self,
+        function_statement: FunctionStatement,
+    ) -> Result<(), Error> {
+        self.functions
+            .put(function_statement.identifier.clone(), function_statement);
+        Ok(())
+    }
+
+    fn execute_function_statement(
+        &mut self,
+        function_statement: FunctionStatement,
+    ) -> Result<(), Error> {
+        self.execute_block_statement(function_statement.block)
+    }
+
+    fn execute_print_statement(&mut self, print_statement: PrintStatement) -> Result<(), Error> {
         let value = self.evaluate_expression(print_statement.expression)?;
         println!("{}", value);
 
@@ -73,25 +99,25 @@ impl Interpreter {
     }
 
     fn execute_block_statement(&mut self, block_statment: BlockStatement) -> Result<(), Error> {
-        let old_environment = self.environment.clone();
+        let old_variables = self.variables.clone();
         for statement in *block_statment.statements {
             self.execute_statement(statement)?;
         }
-        self.environment = old_environment;
+        self.variables = old_variables;
         Ok(())
     }
 
-    fn execute_expression(&self, expression: Expression) -> Result<(), Error> {
+    fn execute_expression(&mut self, expression: Expression) -> Result<(), Error> {
         self.evaluate_expression(expression)?;
         Ok(())
     }
 
-    fn evaluate_expression(&self, expression: Expression) -> Result<Object, Error> {
+    fn evaluate_expression(&mut self, expression: Expression) -> Result<Object, Error> {
         self.match_expression(expression)
     }
 
     fn evaluate_binary_expression(
-        &self,
+        &mut self,
         binary_expression: BinaryExpression,
     ) -> Result<Object, Error> {
         let left = self.match_expression(*binary_expression.left)?;
@@ -435,7 +461,7 @@ impl Interpreter {
     }
 
     fn evaluate_unary_expression(
-        &self,
+        &mut self,
         unary_expression: UnaryExpression,
     ) -> Result<Object, Error> {
         let right = self.match_expression(*unary_expression.right)?;
@@ -486,30 +512,44 @@ impl Interpreter {
     }
 
     fn evaluate_group_expression(
-        &self,
+        &mut self,
         group_expression: GroupExpression,
     ) -> Result<Object, Error> {
         let value = self.evaluate_expression(*group_expression.child)?;
         Ok(value)
     }
 
+    fn evaluate_call_expression(
+        &mut self,
+        call_expression: CallExpression,
+    ) -> Result<Object, Error> {
+        self.execute_function_statement(self.functions.get(call_expression.identifier)?)?;
+        Ok(Object::Nil)
+    }
+
     fn evaluate_identifier_expression(
         &self,
         identifier_expression: IdentifierExpression,
     ) -> Result<Object, Error> {
-        self.environment.get(identifier_expression.identifier)
+        self.variables.get(identifier_expression.identifier)
     }
 
-    fn match_expression(&self, expression: Expression) -> Result<Object, Error> {
+    fn match_expression(&mut self, expression: Expression) -> Result<Object, Error> {
         match expression {
             Expression::Binary(binary_expression) => {
                 self.evaluate_binary_expression(binary_expression)
             }
+
             Expression::Unary(unary_expression) => self.evaluate_unary_expression(unary_expression),
+
             Expression::Group(group_expression) => self.evaluate_group_expression(group_expression),
+
+            Expression::Call(call_expression) => self.evaluate_call_expression(call_expression),
+
             Expression::Identifier(identifier_expression) => {
                 Ok(self.evaluate_identifier_expression(identifier_expression)?)
             }
+
             Expression::Literal(literal_expression) => {
                 if let Some(object) = literal_expression.object.literal {
                     Ok(object)

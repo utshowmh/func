@@ -1,7 +1,8 @@
 use crate::common::{
     ast::{
         BinaryExpression, BlockStatement, Expression, GroupExpression, IdentifierExpression,
-        LetStatement, LiteralExpression, PrintStatement, Program, Statement, UnaryExpression,
+        IfStatement, LetStatement, LiteralExpression, PrintStatement, Program, Statement,
+        UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -68,6 +69,7 @@ impl Parser {
     fn statemet(&mut self) -> Result<Statement, Error> {
         match self.peek().ttype {
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
+            TokenType::If => Ok(Statement::If(self.if_statement()?)),
             TokenType::Print => Ok(Statement::Print(self.print_statement()?)),
             TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
             _ => Ok(Statement::Expression(self.expression()?)),
@@ -80,6 +82,19 @@ impl Parser {
         self.eat(TokenType::Equal)?;
         let expression = self.expression()?;
         Ok(LetStatement::new(identifier, expression))
+    }
+
+    fn if_statement(&mut self) -> Result<IfStatement, Error> {
+        self.advance();
+        let condition = self.expression()?;
+        let if_block = self.block_statement()?;
+        let mut else_block = None;
+        if self.does_match(&[TokenType::Else]) {
+            self.advance();
+            else_block = Some(self.block_statement()?);
+        }
+
+        Ok(IfStatement::new(condition, if_block, else_block))
     }
 
     fn print_statement(&mut self) -> Result<PrintStatement, Error> {

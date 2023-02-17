@@ -1,0 +1,7 @@
+let everyting = "cosmos"
+
+if everyting == nil {
+    print("I don't agree with you")
+} else {
+    print("I also think the same")
+}

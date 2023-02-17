@@ -7,6 +7,7 @@ pub enum Statement {
     Let(LetStatement),
     Print(PrintStatement),
     Block(BlockStatement),
+    If(IfStatement),
     Expression(Expression),
 }
 
@@ -45,6 +46,27 @@ impl BlockStatement {
     pub fn new(statements: Vec<Statement>) -> Self {
         Self {
             statements: Box::new(statements),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct IfStatement {
+    pub condition: Expression,
+    pub if_block: BlockStatement,
+    pub else_block: Option<BlockStatement>,
+}
+
+impl IfStatement {
+    pub fn new(
+        condition: Expression,
+        if_block: BlockStatement,
+        else_block: Option<BlockStatement>,
+    ) -> Self {
+        Self {
+            condition,
+            if_block,
+            else_block,
         }
     }
 }

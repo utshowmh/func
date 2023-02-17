@@ -1,7 +1,7 @@
 use crate::common::{
     ast::{
         BinaryExpression, BlockStatement, Expression, GroupExpression, IdentifierExpression,
-        LetStatement, PrintStatement, Program, Statement, UnaryExpression,
+        IfStatement, LetStatement, PrintStatement, Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     object::Object,
@@ -31,6 +31,7 @@ impl Interpreter {
     fn execute_statements(&mut self, statement: Statement) -> Result<(), Error> {
         match statement {
             Statement::Let(let_statement) => self.execute_let_statement(let_statement),
+            Statement::If(if_statement) => self.execute_if_statement(if_statement),
             Statement::Print(print_statement) => self.execute_print_statement(print_statement),
             Statement::Block(block_statement) => self.execute_block_statement(block_statement),
             Statement::Expression(expression) => self.execute_expression(expression),
@@ -41,6 +42,19 @@ impl Interpreter {
         let identifier = let_statement.identifier;
         let value = self.evaluate_expression(let_statement.expression)?;
         self.environment.put(identifier, value);
+
+        Ok(())
+    }
+
+    fn execute_if_statement(&mut self, if_statement: IfStatement) -> Result<(), Error> {
+        let condition = self.evaluate_expression(if_statement.condition)?;
+        if condition.is_truthy() {
+            self.execute_block_statement(if_statement.if_block)?;
+        } else {
+            if let Some(else_block) = if_statement.else_block {
+                self.execute_block_statement(else_block)?;
+            }
+        }
 
         Ok(())
     }

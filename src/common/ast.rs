@@ -12,6 +12,12 @@ pub enum Statement {
 }
 
 #[derive(Debug)]
+pub enum ElseBlock {
+    Block(BlockStatement),
+    If(IfStatement),
+}
+
+#[derive(Debug)]
 pub struct LetStatement {
     pub identifier: Token,
     pub expression: Expression,
@@ -54,19 +60,19 @@ impl BlockStatement {
 pub struct IfStatement {
     pub condition: Expression,
     pub if_block: BlockStatement,
-    pub else_block: Option<BlockStatement>,
+    pub else_block: Box<Option<ElseBlock>>,
 }
 
 impl IfStatement {
     pub fn new(
         condition: Expression,
         if_block: BlockStatement,
-        else_block: Option<BlockStatement>,
+        else_block: Option<ElseBlock>,
     ) -> Self {
         Self {
             condition,
             if_block,
-            else_block,
+            else_block: Box::new(else_block),
         }
     }
 }

@@ -1,7 +1,8 @@
 use crate::common::{
     ast::{
-        BinaryExpression, BlockStatement, Expression, GroupExpression, IdentifierExpression,
-        IfStatement, LetStatement, PrintStatement, Program, Statement, UnaryExpression,
+        BinaryExpression, BlockStatement, ElseBlock, Expression, GroupExpression,
+        IdentifierExpression, IfStatement, LetStatement, PrintStatement, Program, Statement,
+        UnaryExpression,
     },
     error::{Error, ErrorType},
     object::Object,
@@ -23,12 +24,12 @@ impl Interpreter {
 
     pub fn interpret(&mut self, program: Program) -> Result<(), Error> {
         for statement in program {
-            self.execute_statements(statement)?;
+            self.execute_statement(statement)?;
         }
         Ok(())
     }
 
-    fn execute_statements(&mut self, statement: Statement) -> Result<(), Error> {
+    fn execute_statement(&mut self, statement: Statement) -> Result<(), Error> {
         match statement {
             Statement::Let(let_statement) => self.execute_let_statement(let_statement),
             Statement::If(if_statement) => self.execute_if_statement(if_statement),
@@ -51,8 +52,13 @@ impl Interpreter {
         if condition.is_truthy() {
             self.execute_block_statement(if_statement.if_block)?;
         } else {
-            if let Some(else_block) = if_statement.else_block {
-                self.execute_block_statement(else_block)?;
+            if let Some(else_block) = *if_statement.else_block {
+                match else_block {
+                    ElseBlock::Block(block_statment) => {
+                        self.execute_block_statement(block_statment)?
+                    }
+                    ElseBlock::If(if_statement) => self.execute_if_statement(if_statement)?,
+                }
             }
         }
 
@@ -69,7 +75,7 @@ impl Interpreter {
     fn execute_block_statement(&mut self, block_statment: BlockStatement) -> Result<(), Error> {
         let old_environment = self.environment.clone();
         for statement in *block_statment.statements {
-            self.execute_statements(statement)?;
+            self.execute_statement(statement)?;
         }
         self.environment = old_environment;
         Ok(())

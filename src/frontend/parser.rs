@@ -1,8 +1,8 @@
 use crate::common::{
     ast::{
-        BinaryExpression, BlockStatement, Expression, GroupExpression, IdentifierExpression,
-        IfStatement, LetStatement, LiteralExpression, PrintStatement, Program, Statement,
-        UnaryExpression,
+        BinaryExpression, BlockStatement, ElseBlock, Expression, GroupExpression,
+        IdentifierExpression, IfStatement, LetStatement, LiteralExpression, PrintStatement,
+        Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -89,9 +89,13 @@ impl Parser {
         let condition = self.expression()?;
         let if_block = self.block_statement()?;
         let mut else_block = None;
-        if self.does_match(&[TokenType::Else]) {
+        while self.does_match(&[TokenType::Else]) {
             self.advance();
-            else_block = Some(self.block_statement()?);
+            if self.does_match(&[TokenType::If]) {
+                else_block = Some(ElseBlock::If(self.if_statement()?));
+            } else {
+                else_block = Some(ElseBlock::Block(self.block_statement()?));
+            }
         }
 
         Ok(IfStatement::new(condition, if_block, else_block))

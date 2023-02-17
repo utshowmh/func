@@ -80,7 +80,7 @@ impl Lexer {
         }
     }
 
-    fn token(&self, ttype: TokenType, literal: Option<Object>) -> Token {
+    fn token(&mut self, ttype: TokenType, literal: Option<Object>) -> Token {
         let lexeme: String = self.source[self.start..self.current].iter().collect();
         Token::new(ttype, lexeme, literal, self.current_position.clone())
     }

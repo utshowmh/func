@@ -1,42 +1,32 @@
 let x = 42
 let y = 9
-print("x = 42, y = 9")
+print("let x = 42\nlet y = 9\n\n")
 
 # Arithmetic Operators
-print("x + y is:")
-print(x + y)
-print("x - y is:")
-print(x - y)
-print("x * y is:")
-print(x * y)
-print("x / y is:")
-print(x / y)
-print("x % y is:")
-print(x % y)
+print("x + y is :   ", x + y, "\n")
+print("x - y is :   ", x - y, "\n")
+print("x * y is :   ", x * y, "\n")
+print("x / y is :   ", x / y, "\n")
+print("x % y is :   ", x % y, "\n")
 
 # Comparison Operators
-print("x == y is: ")
-print(x == y)
-print("x != y is: ")
-print(x != y)
-print("x > y is: ")
-print(x > y)
-print("x >= y is: ")
-print(x >= y)
-print("x < y is: ")
-print(x < y)
-print("x <= y is: ")
-print(x <= y)
+print("x == y is    :   ", x == y, "\n")
+print("x != y is    :   ", x != y, "\n")
+print("x > y is :   ", x > y, "\n")
+print("x >= y is    :   ", x >= y, "\n")
+print("x < y is :   ", x < y, "\n")
+print("x <= y is    :   ", x <= y, "\n")
 
-# Unary Operators
-print("-x is:")
-print(-x)
-print("!x is:")
-print(!x)
+# Unary Operator
+print("-x is    :   ", -x, "\n")
 
+x = false
+y = true
+print("\nx = false\ny = true\n\n")
 
 # Logical Operators
-print("x && y is:")
-print(x && y)
-print("x || y is:")
-print(y || y)
+print("x && y is    :   ", x && y, "\n")
+print("x || y is    :   ", y || y, "\n")
+
+# Logical Unary Operators
+print("!x is    :   ", !x, "\n")

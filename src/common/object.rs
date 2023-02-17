@@ -12,7 +12,7 @@ impl Display for Object {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             Self::Number(number) => write!(f, "{}", number),
-            Self::String(string) => write!(f, "{}", string),
+            Self::String(string) => write!(f, "{}", string.replace("\\n", "\n")),
             Self::Boolean(boolean) => write!(f, "{}", boolean),
             Self::Nil => write!(f, "nil"),
         }

@@ -102,14 +102,25 @@ impl Interpreter {
 
     fn execute_function_statement(
         &mut self,
+        arguments: Vec<Expression>,
         function_statement: FunctionStatement,
-    ) -> Result<(), Error> {
-        self.execute_block_statement(function_statement.block)
+    ) -> Result<Object, Error> {
+        let old_variables = self.variables.clone();
+
+        for index in 0..arguments.len() {
+            let identifier = function_statement.paramiters[index].clone();
+            let value = self.evaluate_expression(arguments[index].clone())?;
+            self.variables.put(identifier, value);
+        }
+        self.execute_block_statement(function_statement.block)?;
+
+        self.variables = old_variables;
+        Ok(Object::Nil)
     }
 
     fn execute_print_statement(&mut self, print_statement: PrintStatement) -> Result<(), Error> {
-        for arg in print_statement.args {
-            print!("{}", self.evaluate_expression(arg)?);
+        for argument in print_statement.arguments {
+            print!("{}", self.evaluate_expression(argument)?);
         }
 
         Ok(())
@@ -540,8 +551,18 @@ impl Interpreter {
         &mut self,
         call_expression: CallExpression,
     ) -> Result<Object, Error> {
-        self.execute_function_statement(self.functions.get(call_expression.identifier)?)?;
-        Ok(Object::Nil)
+        let function_statement = self.functions.get(call_expression.identifier.clone())?;
+        let paramiters = function_statement.paramiters.len();
+        let arguments = call_expression.arguments.len();
+        if paramiters != arguments {
+            return Err(Error::new(
+                ErrorType::RuntimeError,
+                format!("Expected {} arguments, got {}", paramiters, arguments),
+                call_expression.identifier.position,
+            ));
+        } else {
+            self.execute_function_statement(call_expression.arguments, function_statement)
+        }
     }
 
     fn evaluate_identifier_expression(

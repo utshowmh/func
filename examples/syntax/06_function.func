@@ -1,5 +1,5 @@
-func say_my_name() {
-    print("you are... utsho.\n")
+func say_my_name(name) {
+    print("you are... ", name, "\n")
 }
 
-say_my_name()
+say_my_name("utsho")

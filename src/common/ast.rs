@@ -51,12 +51,12 @@ impl AssignmentStatement {
 
 #[derive(Debug, Clone)]
 pub struct PrintStatement {
-    pub args: Vec<Expression>,
+    pub arguments: Vec<Expression>,
 }
 
 impl PrintStatement {
-    pub fn new(args: Vec<Expression>) -> Self {
-        Self { args }
+    pub fn new(arguments: Vec<Expression>) -> Self {
+        Self { arguments }
     }
 }
 
@@ -97,12 +97,17 @@ impl IfStatement {
 #[derive(Debug, Clone)]
 pub struct FunctionStatement {
     pub identifier: Token,
+    pub paramiters: Vec<Token>,
     pub block: BlockStatement,
 }
 
 impl FunctionStatement {
-    pub fn new(identifier: Token, block: BlockStatement) -> Self {
-        Self { identifier, block }
+    pub fn new(identifier: Token, paramiters: Vec<Token>, block: BlockStatement) -> Self {
+        Self {
+            identifier,
+            paramiters,
+            block,
+        }
     }
 }
 
@@ -164,11 +169,15 @@ impl GroupExpression {
 #[derive(Debug, Clone)]
 pub struct CallExpression {
     pub identifier: Token,
+    pub arguments: Vec<Expression>,
 }
 
 impl CallExpression {
-    pub fn new(identifier: Token) -> Self {
-        Self { identifier }
+    pub fn new(identifier: Token, arguments: Vec<Expression>) -> Self {
+        Self {
+            identifier,
+            arguments,
+        }
     }
 }
 

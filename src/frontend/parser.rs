@@ -110,11 +110,22 @@ impl Parser {
     fn function_statement(&mut self) -> Result<FunctionStatement, Error> {
         self.advance();
         let identifier = self.eat(TokenType::Identifier)?;
+        let mut paramiters = Vec::new();
         self.eat(TokenType::OpenParen)?;
+        if !self.does_match(&[TokenType::CloseParen]) && !self.eof() {
+            loop {
+                paramiters.push(self.eat(TokenType::Identifier)?);
+                if self.does_match(&[TokenType::Comma]) {
+                    self.advance();
+                } else {
+                    break;
+                }
+            }
+        }
         self.eat(TokenType::CloseParen)?;
         let block = self.block_statement()?;
 
-        Ok(FunctionStatement::new(identifier, block))
+        Ok(FunctionStatement::new(identifier, paramiters, block))
     }
 
     fn if_statement(&mut self) -> Result<IfStatement, Error> {
@@ -137,9 +148,9 @@ impl Parser {
     fn print_statement(&mut self) -> Result<PrintStatement, Error> {
         self.advance();
         self.eat(TokenType::OpenParen)?;
-        let mut args = Vec::new();
+        let mut arguments = Vec::new();
         loop {
-            args.push(self.expression()?);
+            arguments.push(self.expression()?);
             if self.does_match(&[TokenType::Comma]) {
                 self.advance();
             } else {
@@ -147,7 +158,7 @@ impl Parser {
             }
         }
         self.eat(TokenType::CloseParen)?;
-        Ok(PrintStatement::new(args))
+        Ok(PrintStatement::new(arguments))
     }
 
     fn block_statement(&mut self) -> Result<BlockStatement, Error> {
@@ -267,8 +278,19 @@ impl Parser {
             let identifier = self.next_token();
             if self.does_match(&[TokenType::OpenParen]) {
                 self.advance();
+                let mut arguments = Vec::new();
+                if !self.does_match(&[TokenType::CloseParen]) {
+                    loop {
+                        arguments.push(self.expression()?);
+                        if self.does_match(&[TokenType::Comma]) {
+                            self.advance();
+                        } else {
+                            break;
+                        }
+                    }
+                }
                 self.eat(TokenType::CloseParen)?;
-                Ok(Expression::Call(CallExpression::new(identifier)))
+                Ok(Expression::Call(CallExpression::new(identifier, arguments)))
             } else {
                 Ok(Expression::Identifier(IdentifierExpression::new(
                     identifier,

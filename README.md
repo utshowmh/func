@@ -10,6 +10,12 @@ The [Grammer](https://en.wikipedia.org/wiki/Context-free_grammar) for func is de
 
 ---
 
+## Extension
+
+You can find extentions for func [here](https://github.com/utshowmh/func_ext).
+
+---
+
 ## Building Func
 
 In order to build this project, you need to have [git](https://git-scm.com/downloads) and [rust](https://www.rust-lang.org/tools/install) installed on your system. Then you'll be able to [clone this repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository). After cloning, you'll have to [cd](https://en.wikipedia.org/wiki/Cd_(command)) to 'func' and [build it with cargo](https://doc.rust-lang.org/cargo/commands/cargo-build.html). If you want some strait forward commands, you can run these:

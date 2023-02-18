@@ -214,7 +214,6 @@ impl Lexer {
     }
 
     fn make_string(&mut self) -> Result<Option<Token>, Error> {
-        self.advance();
         loop {
             if self.peek() == '"' || self.peek() == '\0' {
                 break;

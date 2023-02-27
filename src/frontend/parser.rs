@@ -1,9 +1,9 @@
 use crate::common::{
     ast::{
-        ArrayExpression, AssignmentStatement, BinaryExpression, BlockStatement, CallExpression,
-        ElseBlock, Expression, FunctionStatement, GroupExpression, IdentifierExpression,
-        IfStatement, LetStatement, LiteralExpression, PrintStatement, Program, Statement,
-        UnaryExpression,
+        ArrayExpression, AssignmentStatement, BinaryExpression, BlockStatement, BuiltinFunction,
+        BuiltinFunctionStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
+        GroupExpression, IdentifierExpression, IfStatement, LetStatement, LiteralExpression,
+        Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -77,10 +77,13 @@ impl Parser {
             TokenType::Func => Ok(Statement::Function(self.function_statement()?)),
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
             TokenType::If => Ok(Statement::If(self.if_statement()?)),
-            TokenType::Print => Ok(Statement::Print(self.print_statement()?)),
             TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
             current_ttype => {
-                if current_ttype == TokenType::Identifier
+                if self.does_match(&[TokenType::Read, TokenType::Write]) {
+                    Ok(Statement::BuiltinFunction(
+                        self.builtin_function_statement()?,
+                    ))
+                } else if current_ttype == TokenType::Identifier
                     && self.peek_next().ttype == TokenType::Equal
                 {
                     Ok(Statement::Assignment(self.assignment_statement()?))
@@ -129,6 +132,53 @@ impl Parser {
         Ok(FunctionStatement::new(identifier, paramiters, block, false))
     }
 
+    fn builtin_function_statement(&mut self) -> Result<BuiltinFunctionStatement, Error> {
+        let func_type = self.next_token().ttype;
+        let mut builtin_func = None;
+
+        self.eat(TokenType::OpenParen)?;
+
+        match func_type {
+            TokenType::Read => {
+                let expression = self.expression()?;
+                self.eat(TokenType::Comma)?;
+                let out_var = self.eat(TokenType::Identifier)?;
+                builtin_func = Some(BuiltinFunctionStatement::new(
+                    BuiltinFunction::Read,
+                    vec![
+                        expression,
+                        Expression::Identifier(IdentifierExpression::new(out_var)),
+                    ],
+                ));
+            }
+            TokenType::Write => {
+                let mut arguments = Vec::new();
+                loop {
+                    arguments.push(self.expression()?);
+                    if self.does_match(&[TokenType::Comma]) {
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
+                builtin_func = Some(BuiltinFunctionStatement::new(
+                    BuiltinFunction::Write,
+                    arguments,
+                ));
+            }
+            _ => {
+                return Err(Error::new(
+                    ErrorType::ParsingError,
+                    format!(""),
+                    self.peek().position,
+                ));
+            }
+        }
+
+        self.eat(TokenType::CloseParen)?;
+        Ok(builtin_func.unwrap())
+    }
+
     fn if_statement(&mut self) -> Result<IfStatement, Error> {
         self.advance();
         let condition = self.expression()?;
@@ -144,22 +194,6 @@ impl Parser {
         }
 
         Ok(IfStatement::new(condition, if_block, else_block))
-    }
-
-    fn print_statement(&mut self) -> Result<PrintStatement, Error> {
-        self.advance();
-        self.eat(TokenType::OpenParen)?;
-        let mut arguments = Vec::new();
-        loop {
-            arguments.push(self.expression()?);
-            if self.does_match(&[TokenType::Comma]) {
-                self.advance();
-            } else {
-                break;
-            }
-        }
-        self.eat(TokenType::CloseParen)?;
-        Ok(PrintStatement::new(arguments))
     }
 
     fn block_statement(&mut self) -> Result<BlockStatement, Error> {

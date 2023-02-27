@@ -6,11 +6,17 @@ pub type Program = Vec<Statement>;
 pub enum Statement {
     Let(LetStatement),
     Assignment(AssignmentStatement),
-    Print(PrintStatement),
     Block(BlockStatement),
     If(IfStatement),
     Function(FunctionStatement),
+    BuiltinFunction(BuiltinFunctionStatement),
     Expression(Expression),
+}
+
+#[derive(Debug, Clone)]
+pub enum BuiltinFunction {
+    Read,
+    Write,
 }
 
 #[derive(Debug, Clone)]
@@ -46,17 +52,6 @@ impl AssignmentStatement {
             identifier,
             expression,
         }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct PrintStatement {
-    pub arguments: Vec<Expression>,
-}
-
-impl PrintStatement {
-    pub fn new(arguments: Vec<Expression>) -> Self {
-        Self { arguments }
     }
 }
 
@@ -114,6 +109,21 @@ impl FunctionStatement {
             paramiters,
             block,
             is_builtin,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct BuiltinFunctionStatement {
+    pub builtin_function: BuiltinFunction,
+    pub arguments: Vec<Expression>,
+}
+
+impl BuiltinFunctionStatement {
+    pub fn new(builtin_function: BuiltinFunction, arguments: Vec<Expression>) -> Self {
+        Self {
+            builtin_function,
+            arguments,
         }
     }
 }

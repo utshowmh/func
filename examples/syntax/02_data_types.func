@@ -4,8 +4,8 @@ let is_real = true
 let age = 14.6
 let planets = ["mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune"]
 
-print("let nothing = nil :", nothing, "\n")
-print("let everything = cosmos :", everything, "\n")        // Can't use " inside of a string.
-print("let is_real = true :", is_real, "\n")
-print("let age = 14.6 :", age, "\n")
-print("planets: ", planets, "\n")
+write("let nothing = nil :", nothing, "\n")
+write("let everything = cosmos :", everything, "\n")        // Can't use " inside of a string.
+write("let is_real = true :", is_real, "\n")
+write("let age = 14.6 :", age, "\n")
+write("planets: ", planets, "\n")

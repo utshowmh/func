@@ -1,5 +1,7 @@
 func say_my_name(name) {
-    print("you are... ", name, "\n")
+    write("you are... ", name, "\n")
 }
 
-say_my_name("utsho")
+let name = nil
+read("your name: ", name)
+say_my_name(name)

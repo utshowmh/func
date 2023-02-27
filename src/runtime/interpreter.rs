@@ -1,8 +1,11 @@
+use std::io::{stdin, stdout, Write};
+
 use crate::common::{
     ast::{
-        AssignmentStatement, BinaryExpression, BlockStatement, CallExpression, ElseBlock,
-        Expression, FunctionStatement, GroupExpression, IdentifierExpression, IfStatement,
-        LetStatement, PrintStatement, Program, Statement, UnaryExpression,
+        AssignmentStatement, BinaryExpression, BlockStatement, BuiltinFunction,
+        BuiltinFunctionStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
+        GroupExpression, IdentifierExpression, IfStatement, LetStatement, Program, Statement,
+        UnaryExpression,
     },
     error::{Error, ErrorType},
     object::Object,
@@ -45,7 +48,9 @@ impl Interpreter {
 
             Statement::If(if_statement) => self.execute_if_statement(if_statement),
 
-            Statement::Print(print_statement) => self.execute_print_statement(print_statement),
+            Statement::BuiltinFunction(builtin_function_statement) => {
+                self.execute_builtin_function_statement(builtin_function_statement)
+            }
 
             Statement::Block(block_statement) => self.execute_block_statement(block_statement),
 
@@ -56,7 +61,7 @@ impl Interpreter {
     fn execute_let_statement(&mut self, let_statement: LetStatement) -> Result<(), Error> {
         let identifier = let_statement.identifier;
         let value = self.evaluate_expression(let_statement.expression)?;
-        self.variables.put(identifier, value);
+        self.variables.declare(identifier, value);
 
         Ok(())
     }
@@ -68,7 +73,7 @@ impl Interpreter {
         let identifier = assignment_statement.identifier;
         self.variables.get(identifier.clone())?;
         let value = self.evaluate_expression(assignment_statement.expression)?;
-        self.variables.put(identifier, value);
+        self.variables.assign(identifier, value)?;
 
         Ok(())
     }
@@ -110,7 +115,7 @@ impl Interpreter {
         for index in 0..arguments.len() {
             let identifier = function_statement.paramiters[index].clone();
             let value = self.evaluate_expression(arguments[index].clone())?;
-            self.variables.put(identifier, value);
+            self.variables.declare(identifier, value);
         }
         self.execute_block_statement(function_statement.block)?;
 
@@ -118,9 +123,30 @@ impl Interpreter {
         Ok(Object::Nil)
     }
 
-    fn execute_print_statement(&mut self, print_statement: PrintStatement) -> Result<(), Error> {
-        for argument in print_statement.arguments {
-            print!("{}", self.evaluate_expression(argument)?);
+    fn execute_builtin_function_statement(
+        &mut self,
+        builtin_function_statement: BuiltinFunctionStatement,
+    ) -> Result<(), Error> {
+        match builtin_function_statement.builtin_function {
+            BuiltinFunction::Read => {
+                let identifier = match builtin_function_statement.arguments[1].clone() {
+                    Expression::Identifier(identifier) => identifier.identifier,
+                    _ => panic!(), // We're not suppose to reach this.
+                };
+                let expression = builtin_function_statement.arguments[0].clone();
+                print!("{}", self.evaluate_expression(expression)?);
+                stdout().flush().unwrap();
+                let mut value = String::new();
+                stdin().read_line(&mut value).unwrap();
+                self.variables
+                    .assign(identifier, Object::String(value.trim().to_string()))?;
+            }
+
+            BuiltinFunction::Write => {
+                for argument in builtin_function_statement.arguments {
+                    print!("{}", self.evaluate_expression(argument)?);
+                }
+            }
         }
 
         Ok(())

@@ -1,9 +1,9 @@
 let everyting = "cosmos"
 
 if everyting == nil {
-    print("I don't agree with you.\n")
+    write("I don't agree with you.\n")
 } else if everyting == "cosmos" {
-    print("I also think the same.\n")
+    write("I also think the same.\n")
 } else {
-    print("I dunno!\n")
+    write("I dunno!\n")
 }

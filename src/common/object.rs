@@ -1,4 +1,9 @@
-use std::fmt::{Display, Formatter, Result};
+use std::fmt;
+
+use super::{
+    error::{Error, ErrorType},
+    position::Position,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Object {
@@ -9,8 +14,8 @@ pub enum Object {
     Nil,
 }
 
-impl Display for Object {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+impl fmt::Display for Object {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Number(number) => write!(f, "{}", number),
             Self::String(string) => write!(f, "{}", string.replace("\\n", "\n")),
@@ -34,6 +39,20 @@ impl Object {
             Self::Boolean(boolean) => boolean.clone(),
             Self::Nil => false,
             _ => true,
+        }
+    }
+
+    pub fn push(&mut self, object: Object, position: Position) -> Result<Object, Error> {
+        match self {
+            Object::Array(array) => {
+                array.push(object);
+                Ok(Object::Array(array.clone()))
+            }
+            _ => Err(Error::new(
+                ErrorType::RuntimeError,
+                format!("{} does not have push method associated with it", object),
+                position,
+            )),
         }
     }
 }

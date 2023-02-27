@@ -31,6 +31,8 @@ pub enum TokenType {
 
     OpenParen,
     CloseParen,
+    OpenBrack,
+    CloseBrack,
     OpenCurly,
     CloseCurly,
 
@@ -73,6 +75,8 @@ impl Display for TokenType {
 
             Self::OpenParen => write!(f, "("),
             Self::CloseParen => write!(f, ")"),
+            Self::OpenBrack => write!(f, "["),
+            Self::CloseBrack => write!(f, "]"),
             Self::OpenCurly => write!(f, "{{"),
             Self::CloseCurly => write!(f, "}}"),
 

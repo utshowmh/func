@@ -526,6 +526,15 @@ impl Interpreter {
                     ),
                     unary_expression.operator.position,
                 )),
+
+                Object::Array(_) => Err(Error::new(
+                    ErrorType::RuntimeError,
+                    format!(
+                        "Type mismatch, `{}` does not support `array` as it's operand",
+                        unary_expression.operator.lexeme
+                    ),
+                    unary_expression.operator.position,
+                )),
             },
 
             _ => Err(Error::new(
@@ -594,6 +603,16 @@ impl Interpreter {
                 } else {
                     Ok(Object::Nil)
                 }
+            }
+
+            Expression::Array(array_expression) => {
+                let mut objects = Vec::new();
+                for object in array_expression.objects {
+                    if let Some(object) = object.literal {
+                        objects.push(object)
+                    }
+                }
+                Ok(Object::Array(objects))
             }
         }
     }

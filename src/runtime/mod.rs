@@ -1,2 +1,2 @@
-pub mod environment;
+mod environment;
 pub mod interpreter;

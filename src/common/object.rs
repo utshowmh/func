@@ -5,6 +5,7 @@ pub enum Object {
     Number(f64),
     String(String),
     Boolean(bool),
+    Array(Vec<Object>),
     Nil,
 }
 
@@ -14,6 +15,14 @@ impl Display for Object {
             Self::Number(number) => write!(f, "{}", number),
             Self::String(string) => write!(f, "{}", string.replace("\\n", "\n")),
             Self::Boolean(boolean) => write!(f, "{}", boolean),
+            Self::Array(array) => {
+                write!(f, "[")?;
+                for object in array {
+                    write!(f, "{},", object)?;
+                }
+                write!(f, "]")?;
+                Ok(())
+            }
             Self::Nil => write!(f, "nil"),
         }
     }

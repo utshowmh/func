@@ -1,6 +1,6 @@
 func count(start, end) {
-    print("count is: ", start, "\n")
-    if start != end {
+    if start <= end {
+        print("count is: ", start, "\n")
         start = start + 1
         count(start, end)
     }

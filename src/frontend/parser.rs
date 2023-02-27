@@ -1,8 +1,9 @@
 use crate::common::{
     ast::{
-        AssignmentStatement, BinaryExpression, BlockStatement, CallExpression, ElseBlock,
-        Expression, FunctionStatement, GroupExpression, IdentifierExpression, IfStatement,
-        LetStatement, LiteralExpression, PrintStatement, Program, Statement, UnaryExpression,
+        ArrayExpression, AssignmentStatement, BinaryExpression, BlockStatement, CallExpression,
+        ElseBlock, Expression, FunctionStatement, GroupExpression, IdentifierExpression,
+        IfStatement, LetStatement, LiteralExpression, PrintStatement, Program, Statement,
+        UnaryExpression,
     },
     error::{Error, ErrorType},
     token::{Token, TokenType},
@@ -125,7 +126,7 @@ impl Parser {
         self.eat(TokenType::CloseParen)?;
         let block = self.block_statement()?;
 
-        Ok(FunctionStatement::new(identifier, paramiters, block))
+        Ok(FunctionStatement::new(identifier, paramiters, block, false))
     }
 
     fn if_statement(&mut self) -> Result<IfStatement, Error> {
@@ -296,6 +297,20 @@ impl Parser {
                     identifier,
                 )))
             }
+        } else if self.does_match(&[TokenType::OpenBrack]) {
+            self.advance();
+            let mut objects = Vec::new();
+            loop {
+                objects.push(self.next_token());
+                if self.does_match(&[TokenType::Comma]) {
+                    self.advance();
+                    continue;
+                } else {
+                    break;
+                }
+            }
+            self.eat(TokenType::CloseBrack)?;
+            Ok(Expression::Array(ArrayExpression::new(objects)))
         } else if self.does_match(&[TokenType::OpenParen]) {
             self.advance();
             let child = self.expression()?;

@@ -99,14 +99,21 @@ pub struct FunctionStatement {
     pub identifier: Token,
     pub paramiters: Vec<Token>,
     pub block: BlockStatement,
+    pub is_builtin: bool,
 }
 
 impl FunctionStatement {
-    pub fn new(identifier: Token, paramiters: Vec<Token>, block: BlockStatement) -> Self {
+    pub fn new(
+        identifier: Token,
+        paramiters: Vec<Token>,
+        block: BlockStatement,
+        is_builtin: bool,
+    ) -> Self {
         Self {
             identifier,
             paramiters,
             block,
+            is_builtin,
         }
     }
 }
@@ -119,6 +126,7 @@ pub enum Expression {
     Call(CallExpression),
     Identifier(IdentifierExpression),
     Literal(LiteralExpression),
+    Array(ArrayExpression),
 }
 
 #[derive(Debug, Clone)]
@@ -200,5 +208,16 @@ pub struct LiteralExpression {
 impl LiteralExpression {
     pub fn new(object: Token) -> Self {
         Self { object }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ArrayExpression {
+    pub objects: Vec<Token>,
+}
+
+impl ArrayExpression {
+    pub fn new(objects: Vec<Token>) -> Self {
+        Self { objects }
     }
 }

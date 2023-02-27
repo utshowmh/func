@@ -1,6 +1,6 @@
 {
-    let god = "nature"                      // Well, I'm an Spinozist : )
-    print("god is: " + god + ".\n")     // String concatination
+    let god = "nature"                              // Well, I'm an Spinozist : )
+    print("god is: " + god + ".\n")         // String concatination
 }
 
-print(god)                                       // This will thorw an RuntimeError because god has gone out of scope.
+print(god)          // This will thorw an RuntimeError because god has gone out of scope.

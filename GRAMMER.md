@@ -7,7 +7,7 @@ comment         ->      "//" ... "\n"
 
 stmt            ->      let_stmt | assignment_stmt | print_stmt | block_stmt | if_stmt | func_stmt | expr 
 
-let_stmt        ->      "let" ident "=" expr
+let_stmt        ->      "let" ident ("=" expr)?
 assignment_stmt ->  ident "=" expr
 print_stmt      ->      "print" "(" expr ")"
 block_stmt      ->      "{" stmt* "}"

@@ -6,6 +6,7 @@ use crate::common::{
         Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
+    object::Object,
     token::{Token, TokenType},
 };
 
@@ -97,10 +98,21 @@ impl Parser {
     fn let_statement(&mut self) -> Result<LetStatement, Error> {
         self.advance();
         let identifier = self.eat(TokenType::Identifier)?;
-        self.eat(TokenType::Equal)?;
-        let expression = self.expression()?;
-
-        Ok(LetStatement::new(identifier, expression))
+        if self.does_match(&[TokenType::Equal]) {
+            self.advance();
+            let expression = self.expression()?;
+            Ok(LetStatement::new(identifier, expression))
+        } else {
+            Ok(LetStatement::new(
+                identifier,
+                Expression::Literal(LiteralExpression::new(Token::new(
+                    TokenType::Nil,
+                    "nil".to_string(),
+                    Some(Object::Nil),
+                    self.peek().position,
+                ))),
+            ))
+        }
     }
 
     fn assignment_statement(&mut self) -> Result<AssignmentStatement, Error> {

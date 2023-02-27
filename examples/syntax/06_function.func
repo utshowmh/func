@@ -2,6 +2,6 @@ func say_my_name(name) {
     write("you are... ", name, "\n")
 }
 
-let name = nil
+let name
 read("your name: ", name)
 say_my_name(name)

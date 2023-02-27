@@ -1,0 +1,9 @@
+let languages = ["rust", "haskell", "func"]
+write("languages: ", languages, "\n")
+
+let language
+write("enter new langage: \n")
+read(language)
+push(language, languages)
+
+write("languages", languages, "\n")

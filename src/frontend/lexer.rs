@@ -35,14 +35,17 @@ impl Lexer {
     fn init_keywords(&mut self) {
         self.keywords.insert("let".to_string(), TokenType::Let);
         self.keywords.insert("func".to_string(), TokenType::Func);
-        self.keywords.insert("read".to_string(), TokenType::Read);
-        self.keywords.insert("write".to_string(), TokenType::Write);
         self.keywords.insert("if".to_string(), TokenType::If);
         self.keywords.insert("else".to_string(), TokenType::Else);
+
         self.keywords.insert("true".to_string(), TokenType::Boolean);
         self.keywords
             .insert("false".to_string(), TokenType::Boolean);
         self.keywords.insert("nil".to_string(), TokenType::Nil);
+
+        self.keywords.insert("read".to_string(), TokenType::Read);
+        self.keywords.insert("write".to_string(), TokenType::Write);
+        self.keywords.insert("push".to_string(), TokenType::Push);
     }
 
     pub fn lex(&mut self) -> Result<Vec<Token>, Error> {

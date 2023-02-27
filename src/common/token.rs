@@ -43,6 +43,7 @@ pub enum TokenType {
 
     Read,
     Write,
+    Push,
 
     EOF,
 }
@@ -89,6 +90,7 @@ impl Display for TokenType {
 
             Self::Read => write!(f, "read"),
             Self::Write => write!(f, "write"),
+            Self::Push => write!(f, "push"),
 
             Self::EOF => write!(f, "\0"),
         }

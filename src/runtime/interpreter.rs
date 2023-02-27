@@ -1,4 +1,4 @@
-use std::io::{stdin, stdout, Write};
+use std::io::stdin;
 
 use crate::common::{
     ast::{
@@ -129,13 +129,10 @@ impl Interpreter {
     ) -> Result<(), Error> {
         match builtin_function_statement.builtin_function {
             BuiltinFunction::Read => {
-                let identifier = match builtin_function_statement.arguments[1].clone() {
+                let identifier = match builtin_function_statement.arguments[0].clone() {
                     Expression::Identifier(identifier) => identifier.identifier,
-                    _ => panic!(), // We're not suppose to reach this.
+                    _ => panic!(), // We're not suppose to reach this because we're 'eating' identifier token in parser.
                 };
-                let expression = builtin_function_statement.arguments[0].clone();
-                print!("{}", self.evaluate_expression(expression)?);
-                stdout().flush().unwrap();
                 let mut value = String::new();
                 stdin().read_line(&mut value).unwrap();
                 self.variables
@@ -146,6 +143,18 @@ impl Interpreter {
                 for argument in builtin_function_statement.arguments {
                     print!("{}", self.evaluate_expression(argument)?);
                 }
+            }
+
+            BuiltinFunction::Push => {
+                let identifier = match builtin_function_statement.arguments[1].clone() {
+                    Expression::Identifier(identifier) => identifier.identifier,
+                    _ => panic!(), // We're not suppose to reach this because we're 'eating' identifier token in parser.
+                };
+                let object =
+                    self.evaluate_expression(builtin_function_statement.arguments[0].clone())?;
+                let mut array = self.variables.get(identifier.clone())?;
+                self.variables
+                    .assign(identifier.clone(), array.push(object, identifier.position)?)?;
             }
         }
 

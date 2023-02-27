@@ -80,7 +80,7 @@ impl Parser {
             TokenType::If => Ok(Statement::If(self.if_statement()?)),
             TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
             current_ttype => {
-                if self.does_match(&[TokenType::Read, TokenType::Write]) {
+                if self.does_match(&[TokenType::Read, TokenType::Write, TokenType::Push]) {
                     Ok(Statement::BuiltinFunction(
                         self.builtin_function_statement()?,
                     ))
@@ -152,17 +152,15 @@ impl Parser {
 
         match func_type {
             TokenType::Read => {
-                let expression = self.expression()?;
-                self.eat(TokenType::Comma)?;
-                let out_var = self.eat(TokenType::Identifier)?;
+                let identifier = self.eat(TokenType::Identifier)?;
                 builtin_func = Some(BuiltinFunctionStatement::new(
                     BuiltinFunction::Read,
-                    vec![
-                        expression,
-                        Expression::Identifier(IdentifierExpression::new(out_var)),
-                    ],
+                    vec![Expression::Identifier(IdentifierExpression::new(
+                        identifier,
+                    ))],
                 ));
             }
+
             TokenType::Write => {
                 let mut arguments = Vec::new();
                 loop {
@@ -178,6 +176,20 @@ impl Parser {
                     arguments,
                 ));
             }
+
+            TokenType::Push => {
+                let expression = self.expression()?;
+                self.eat(TokenType::Comma)?;
+                let identifier = self.eat(TokenType::Identifier)?;
+                builtin_func = Some(BuiltinFunctionStatement::new(
+                    BuiltinFunction::Push,
+                    vec![
+                        expression,
+                        Expression::Identifier(IdentifierExpression::new(identifier)),
+                    ],
+                ));
+            }
+
             _ => {
                 return Err(Error::new(
                     ErrorType::ParsingError,

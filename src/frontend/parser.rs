@@ -80,7 +80,12 @@ impl Parser {
             TokenType::If => Ok(Statement::If(self.if_statement()?)),
             TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
             current_ttype => {
-                if self.does_match(&[TokenType::Read, TokenType::Write, TokenType::Push]) {
+                if self.does_match(&[
+                    TokenType::Read,
+                    TokenType::Write,
+                    TokenType::Push,
+                    TokenType::Pop,
+                ]) {
                     Ok(Statement::BuiltinFunction(
                         self.builtin_function_statement()?,
                     ))
@@ -190,13 +195,17 @@ impl Parser {
                 ));
             }
 
-            _ => {
-                return Err(Error::new(
-                    ErrorType::ParsingError,
-                    format!(""),
-                    self.peek().position,
+            TokenType::Pop => {
+                let identifier = self.eat(TokenType::Identifier)?;
+                builtin_func = Some(BuiltinFunctionStatement::new(
+                    BuiltinFunction::Pop,
+                    vec![Expression::Identifier(IdentifierExpression::new(
+                        identifier,
+                    ))],
                 ));
             }
+
+            _ => panic!(), // We're never reaching this because we've already filtered token type.
         }
 
         self.eat(TokenType::CloseParen)?;

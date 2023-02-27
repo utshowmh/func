@@ -50,7 +50,21 @@ impl Object {
             }
             _ => Err(Error::new(
                 ErrorType::RuntimeError,
-                format!("{} does not have push method associated with it", object),
+                format!("`{}` does not have `push` method associated with it", self),
+                position,
+            )),
+        }
+    }
+
+    pub fn pop(&mut self, position: Position) -> Result<Object, Error> {
+        match self {
+            Object::Array(array) => {
+                array.pop();
+                Ok(Object::Array(array.clone()))
+            }
+            _ => Err(Error::new(
+                ErrorType::RuntimeError,
+                format!("`{}` does not have `push` method associated with it", self),
                 position,
             )),
         }

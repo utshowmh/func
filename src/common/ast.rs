@@ -18,6 +18,7 @@ pub enum BuiltinFunction {
     Read,
     Write,
     Push,
+    Pop,
 }
 
 #[derive(Debug, Clone)]

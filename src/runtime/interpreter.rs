@@ -131,7 +131,7 @@ impl Interpreter {
             BuiltinFunction::Read => {
                 let identifier = match builtin_function_statement.arguments[0].clone() {
                     Expression::Identifier(identifier) => identifier.identifier,
-                    _ => panic!(), // We're not suppose to reach this because we're 'eating' identifier token in parser.
+                    _ => panic!(), // We're never reaching this because we're 'eating' identifier token in parser.
                 };
                 let mut value = String::new();
                 stdin().read_line(&mut value).unwrap();
@@ -148,13 +148,23 @@ impl Interpreter {
             BuiltinFunction::Push => {
                 let identifier = match builtin_function_statement.arguments[1].clone() {
                     Expression::Identifier(identifier) => identifier.identifier,
-                    _ => panic!(), // We're not suppose to reach this because we're 'eating' identifier token in parser.
+                    _ => panic!(), // We're never reaching this because we're 'eating' identifier token in parser.
                 };
                 let object =
                     self.evaluate_expression(builtin_function_statement.arguments[0].clone())?;
                 let mut array = self.variables.get(identifier.clone())?;
                 self.variables
                     .assign(identifier.clone(), array.push(object, identifier.position)?)?;
+            }
+
+            BuiltinFunction::Pop => {
+                let identifier = match builtin_function_statement.arguments[0].clone() {
+                    Expression::Identifier(identifier) => identifier.identifier,
+                    _ => panic!(), // We're never reaching this because we're 'eating' identifier token in parser.
+                };
+                let mut array = self.variables.get(identifier.clone())?;
+                self.variables
+                    .assign(identifier.clone(), array.pop(identifier.position)?)?;
             }
         }
 

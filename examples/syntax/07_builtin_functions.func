@@ -7,3 +7,6 @@ read(language)
 push(language, languages)
 
 write("languages", languages, "\n")
+
+pop(languages)
+write("languages", languages, "\n")

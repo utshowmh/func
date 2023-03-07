@@ -14,6 +14,7 @@ use crate::common::{
 
 use super::environment::{FunctionBindings, VariableBindings};
 
+#[derive(Default)]
 pub struct Interpreter {
     variables: VariableBindings,
     functions: FunctionBindings,
@@ -21,10 +22,7 @@ pub struct Interpreter {
 
 impl Interpreter {
     pub fn new() -> Self {
-        Self {
-            variables: VariableBindings::new(),
-            functions: FunctionBindings::new(),
-        }
+        Self::default()
     }
 
     pub fn interpret(&mut self, program: Program) -> Result<(), Error> {
@@ -82,14 +80,10 @@ impl Interpreter {
         let condition = self.evaluate_expression(if_statement.condition)?;
         if condition.is_truthy() {
             self.execute_block_statement(if_statement.if_block)?;
-        } else {
-            if let Some(else_block) = *if_statement.else_block {
-                match else_block {
-                    ElseBlock::Block(block_statment) => {
-                        self.execute_block_statement(block_statment)?
-                    }
-                    ElseBlock::If(if_statement) => self.execute_if_statement(if_statement)?,
-                }
+        } else if let Some(else_block) = *if_statement.else_block {
+            match else_block {
+                ElseBlock::Block(block_statment) => self.execute_block_statement(block_statment)?,
+                ElseBlock::If(if_statement) => self.execute_if_statement(if_statement)?,
             }
         }
 
@@ -112,10 +106,9 @@ impl Interpreter {
     ) -> Result<Object, Error> {
         let old_variables = self.variables.clone();
 
-        for index in 0..arguments.len() {
-            let identifier = function_statement.paramiters[index].clone();
-            let value = self.evaluate_expression(arguments[index].clone())?;
-            self.variables.declare(identifier, value);
+        for (identifier, argument) in function_statement.paramiters.iter().zip(arguments.iter()) {
+            let value = self.evaluate_expression(argument.clone())?;
+            self.variables.declare(identifier.clone(), value);
         }
         self.execute_block_statement(function_statement.block)?;
 

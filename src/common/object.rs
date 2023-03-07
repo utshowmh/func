@@ -36,7 +36,7 @@ impl fmt::Display for Object {
 impl Object {
     pub fn is_truthy(&self) -> bool {
         match self {
-            Self::Boolean(boolean) => boolean.clone(),
+            Self::Boolean(boolean) => *boolean,
             Self::Nil => false,
             _ => true,
         }

@@ -240,7 +240,7 @@ impl Lexer {
         } else {
             Err(Error::new(
                 ErrorType::LexingError,
-                format!("Unterminated string"),
+                "Unterminated string".to_owned(),
                 self.current_position.clone(),
             ))
         }

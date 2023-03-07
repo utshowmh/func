@@ -7,18 +7,12 @@ use crate::common::{
     token::Token,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct VariableBindings {
     bindings: HashMap<String, Object>,
 }
 
 impl VariableBindings {
-    pub fn new() -> Self {
-        Self {
-            bindings: HashMap::new(),
-        }
-    }
-
     pub fn declare(&mut self, identifier: Token, value: Object) {
         self.bindings.insert(identifier.lexeme, value);
     }
@@ -36,7 +30,7 @@ impl VariableBindings {
     }
 
     pub fn assign(&mut self, identifier: Token, value: Object) -> Result<(), Error> {
-        if let Some(_) = self.bindings.get(&identifier.lexeme) {
+        if self.bindings.get(&identifier.lexeme).is_some() {
             self.declare(identifier, value);
             Ok(())
         } else {
@@ -49,18 +43,12 @@ impl VariableBindings {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct FunctionBindings {
     bindings: HashMap<String, FunctionStatement>,
 }
 
 impl FunctionBindings {
-    pub fn new() -> Self {
-        Self {
-            bindings: HashMap::new(),
-        }
-    }
-
     pub fn put(&mut self, identifier: Token, value: FunctionStatement) {
         self.bindings.insert(identifier.lexeme, value);
     }

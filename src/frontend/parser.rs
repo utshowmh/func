@@ -6,7 +6,7 @@ use crate::common::{
         Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
-    object::Object,
+    object::{Meta, Object},
     token::{Token, TokenType},
 };
 
@@ -115,7 +115,7 @@ impl Parser {
                 Expression::Literal(LiteralExpression::new(Token::new(
                     TokenType::Nil,
                     "nil".to_string(),
-                    Some(Object::Nil),
+                    Some(Object::Nil(Meta::default())),
                     self.peek().position,
                 ))),
             ))

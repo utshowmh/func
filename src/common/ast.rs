@@ -6,7 +6,6 @@ pub type Program = Vec<Statement>;
 pub enum Statement {
     Let(LetStatement),
     Assignment(AssignmentStatement),
-    If(IfStatement),
     Function(FunctionStatement),
     BuiltinFunction(BuiltinFunctionStatement),
     Return(Expression),
@@ -24,7 +23,7 @@ pub enum BuiltinFunction {
 #[derive(Debug, Clone)]
 pub enum ElseBlock {
     Block(BlockExpression),
-    If(IfStatement),
+    If(IfExpression),
 }
 
 #[derive(Debug, Clone)]
@@ -71,20 +70,20 @@ impl BlockExpression {
 }
 
 #[derive(Debug, Clone)]
-pub struct IfStatement {
-    pub condition: Expression,
+pub struct IfExpression {
+    pub condition: Box<Expression>,
     pub if_block: BlockExpression,
     pub else_block: Box<Option<ElseBlock>>,
 }
 
-impl IfStatement {
+impl IfExpression {
     pub fn new(
         condition: Expression,
         if_block: BlockExpression,
         else_block: Option<ElseBlock>,
     ) -> Self {
         Self {
-            condition,
+            condition: Box::new(condition),
             if_block,
             else_block: Box::new(else_block),
         }
@@ -133,6 +132,7 @@ impl BuiltinFunctionStatement {
 #[derive(Debug, Clone)]
 pub enum Expression {
     Block(BlockExpression),
+    If(IfExpression),
     Binary(BinaryExpression),
     Unary(UnaryExpression),
     Group(GroupExpression),

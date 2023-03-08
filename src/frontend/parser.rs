@@ -2,7 +2,7 @@ use crate::common::{
     ast::{
         ArrayExpression, AssignmentStatement, BinaryExpression, BlockExpression, BuiltinFunction,
         BuiltinFunctionStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
-        GroupExpression, IdentifierExpression, IfStatement, LetStatement, LiteralExpression,
+        GroupExpression, IdentifierExpression, IfExpression, LetStatement, LiteralExpression,
         Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
@@ -77,7 +77,6 @@ impl Parser {
         match self.peek().ttype {
             TokenType::Func => Ok(Statement::Function(self.function_statement()?)),
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
-            TokenType::If => Ok(Statement::If(self.if_statement()?)),
             TokenType::Return => Ok(Statement::Return(self.return_statement()?)),
             TokenType::OpenCurly => Ok(Statement::Expression(Expression::Block(
                 self.block_expression()?,
@@ -215,7 +214,7 @@ impl Parser {
         Ok(builtin_func.unwrap())
     }
 
-    fn if_statement(&mut self) -> Result<IfStatement, Error> {
+    fn if_expression(&mut self) -> Result<IfExpression, Error> {
         self.advance();
         let condition = self.expression()?;
         let if_block = self.block_expression()?;
@@ -223,13 +222,13 @@ impl Parser {
         while self.does_match(&[TokenType::Else]) {
             self.advance();
             if self.does_match(&[TokenType::If]) {
-                else_block = Some(ElseBlock::If(self.if_statement()?));
+                else_block = Some(ElseBlock::If(self.if_expression()?));
             } else {
                 else_block = Some(ElseBlock::Block(self.block_expression()?));
             }
         }
 
-        Ok(IfStatement::new(condition, if_block, else_block))
+        Ok(IfExpression::new(condition, if_block, else_block))
     }
 
     fn return_statement(&mut self) -> Result<Expression, Error> {
@@ -257,6 +256,8 @@ impl Parser {
     fn block(&mut self) -> Result<Expression, Error> {
         if self.peek().ttype == TokenType::OpenCurly {
             self.block_expression().map(Expression::Block)
+        } else if self.peek().ttype == TokenType::If {
+            self.if_expression().map(Expression::If)
         } else {
             self.and()
         }

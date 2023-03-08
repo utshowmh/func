@@ -2,10 +2,16 @@
 let result = {
     let a = 1
     let b = 2
-    return a + b
+    return a + b // You can remove the return keyword if the expression is the last one in the block.
 }
 
-write("result is: ", result , "\n") // result is: 3
+let result2 = {
+    let a = 1
+    let b = 2
+    a + b // This will return the value of the last expression in the block.
+}
+
+write("result is: ", result + result2, "\n") // result is: 6
 
 {
     let god = "nature"              // Well, I'm an Spinozist : )

@@ -7,3 +7,26 @@ func say_my_name(name) {
 }
 
 say_my_name("heisenberg") // you are... heisenberg
+
+func add2(x) {
+    // There is no return statement, so the last expression is returned
+    if x == 0 {
+        2
+    } else {
+        1 + add2(x - 1)
+    }
+}
+
+write(add2(5)) // 7
+
+func add3(x) {
+    // The return statement have been used in the if statement, 
+    // so the if statement will return a return statement. then the function will return the return statement directly.
+    if x <= 0 {
+        return 3
+    } else {
+        2 + add2(x - 1)
+    }
+}
+
+write(add3(-5)) // 3

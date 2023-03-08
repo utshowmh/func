@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::common::{
     error::{Error, ErrorType},
-    object::Object,
+    object::{Meta, Object},
     position::Position,
     token::{Token, TokenType},
 };
@@ -37,6 +37,8 @@ impl Lexer {
         self.keywords.insert("func".to_string(), TokenType::Func);
         self.keywords.insert("if".to_string(), TokenType::If);
         self.keywords.insert("else".to_string(), TokenType::Else);
+        self.keywords
+            .insert("return".to_string(), TokenType::Return);
 
         self.keywords.insert("true".to_string(), TokenType::Boolean);
         self.keywords
@@ -234,9 +236,10 @@ impl Lexer {
             let lexeme: String = self.source[self.start + 1..self.current - 1]
                 .iter()
                 .collect();
-            Ok(Some(
-                self.token(TokenType::String, Some(Object::String(lexeme))),
-            ))
+            Ok(Some(self.token(
+                TokenType::String,
+                Some(Object::String(lexeme, Meta::default())),
+            )))
         } else {
             Err(Error::new(
                 ErrorType::LexingError,
@@ -258,9 +261,10 @@ impl Lexer {
         }
         let lexeme: String = self.source[self.start..self.current].iter().collect();
         if let Ok(float) = lexeme.parse() {
-            Ok(Some(
-                self.token(TokenType::Number, Some(Object::Number(float))),
-            ))
+            Ok(Some(self.token(
+                TokenType::Number,
+                Some(Object::Number(float, Meta::default())),
+            )))
         } else {
             Err(Error::new(
                 ErrorType::LexingError,
@@ -278,11 +282,11 @@ impl Lexer {
         if let Some(ttype) = self.keywords.get(&lexeme) {
             if ttype == &TokenType::Boolean && lexeme == "true" {
                 Ok(Some(
-                    self.token(TokenType::Boolean, Some(Object::Boolean(true))),
+                    self.token(TokenType::Boolean, Some(Object::Boolean(true, Meta::default()))),
                 ))
             } else if ttype == &TokenType::Boolean && lexeme == "false" {
                 Ok(Some(
-                    self.token(TokenType::Boolean, Some(Object::Boolean(false))),
+                    self.token(TokenType::Boolean, Some(Object::Boolean(false, Meta::default()))),
                 ))
             } else {
                 Ok(Some(self.token(ttype.clone(), None)))

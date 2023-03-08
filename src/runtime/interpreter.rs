@@ -174,8 +174,12 @@ impl Interpreter {
             if let Statement::Return(return_expression) = statement {
                 return_value = self.evaluate_expression(return_expression)?;
                 break;
+            } else if let Statement::Expression(expression) = statement {
+                return_value = self.evaluate_expression(expression)?;
+            } else {
+                return_value = Object::Nil;
+                self.execute_statement(statement)?;
             }
-            self.execute_statement(statement)?;
         }
         self.variables = old_variables;
         Ok(return_value)

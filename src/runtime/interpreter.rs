@@ -643,13 +643,7 @@ impl Interpreter {
                 Ok(self.evaluate_identifier_expression(identifier_expression)?)
             }
 
-            Expression::Block(block_expression) => {
-                if let Ok(object) = self.evaluate_block_expression(block_expression) {
-                    Ok(object)
-                } else {
-                    Ok(Object::Nil)
-                }
-            }
+            Expression::Block(block_expression) => self.evaluate_block_expression(block_expression),
 
             Expression::If(if_expression) => self.evaluate_if_expression(if_expression),
 

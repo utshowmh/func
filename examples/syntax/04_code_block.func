@@ -1,6 +1,21 @@
-{
-    let god = "nature"                              // Well, I'm an Spinozist : )
-    write("god is: " + god + ".\n")         // String concatination
+// Return a value from a block, using the return keyword.
+let result = {
+    let a = 1
+    let b = 2
+    return a + b // You can remove the return keyword if the expression is the last one in the block.
 }
 
-write(god)          // This will thorw an RuntimeError because god has gone out of scope.
+let result2 = {
+    let a = 1
+    let b = 2
+    a + b // This will return the value of the last expression in the block.
+}
+
+write("result is: ", result + result2, "\n") // result is: 6
+
+{
+    let god = "nature"              // Well, I'm an Spinozist : )
+    write("god is: " + god + ".\n") // String concatination
+}
+
+write(god) // This will thorw an RuntimeError because god has gone out of scope.

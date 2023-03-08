@@ -2,13 +2,13 @@ use std::io::stdin;
 
 use crate::common::{
     ast::{
-        AssignmentStatement, BinaryExpression, BlockStatement, BuiltinFunction,
+        AssignmentStatement, BinaryExpression, BlockExpression, BuiltinFunction,
         BuiltinFunctionStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
-        GroupExpression, IdentifierExpression, IfStatement, LetStatement, Program, Statement,
+        GroupExpression, IdentifierExpression, IfExpression, LetStatement, Program, Statement,
         UnaryExpression,
     },
     error::{Error, ErrorType},
-    object::Object,
+    object::{Meta, Object},
     token::TokenType,
 };
 
@@ -32,7 +32,7 @@ impl Interpreter {
         Ok(())
     }
 
-    fn execute_statement(&mut self, statement: Statement) -> Result<(), Error> {
+    fn execute_statement(&mut self, statement: Statement) -> Result<Object, Error> {
         match statement {
             Statement::Let(let_statement) => self.execute_let_statement(let_statement),
 
@@ -44,59 +44,42 @@ impl Interpreter {
                 self.define_function_statement(function_statement)
             }
 
-            Statement::If(if_statement) => self.execute_if_statement(if_statement),
-
             Statement::BuiltinFunction(builtin_function_statement) => {
                 self.execute_builtin_function_statement(builtin_function_statement)
             }
 
-            Statement::Block(block_statement) => self.execute_block_statement(block_statement),
-
-            Statement::Expression(expression) => self.execute_expression(expression),
+            Statement::Expression(expression) => self.evaluate_expression(expression),
+            _ => Ok(Object::Nil(Meta::default())),
         }
     }
 
-    fn execute_let_statement(&mut self, let_statement: LetStatement) -> Result<(), Error> {
+    fn execute_let_statement(&mut self, let_statement: LetStatement) -> Result<Object, Error> {
         let identifier = let_statement.identifier;
         let value = self.evaluate_expression(let_statement.expression)?;
-        self.variables.declare(identifier, value);
+        self.variables.declare(identifier, value.clone());
 
-        Ok(())
+        Ok(value)
     }
 
     fn execute_assignment_statement(
         &mut self,
         assignment_statement: AssignmentStatement,
-    ) -> Result<(), Error> {
+    ) -> Result<Object, Error> {
         let identifier = assignment_statement.identifier;
         self.variables.get(identifier.clone())?;
         let value = self.evaluate_expression(assignment_statement.expression)?;
-        self.variables.assign(identifier, value)?;
+        self.variables.assign(identifier, value.clone())?;
 
-        Ok(())
-    }
-
-    fn execute_if_statement(&mut self, if_statement: IfStatement) -> Result<(), Error> {
-        let condition = self.evaluate_expression(if_statement.condition)?;
-        if condition.is_truthy() {
-            self.execute_block_statement(if_statement.if_block)?;
-        } else if let Some(else_block) = *if_statement.else_block {
-            match else_block {
-                ElseBlock::Block(block_statment) => self.execute_block_statement(block_statment)?,
-                ElseBlock::If(if_statement) => self.execute_if_statement(if_statement)?,
-            }
-        }
-
-        Ok(())
+        Ok(value)
     }
 
     fn define_function_statement(
         &mut self,
         function_statement: FunctionStatement,
-    ) -> Result<(), Error> {
+    ) -> Result<Object, Error> {
         self.functions
             .put(function_statement.identifier.clone(), function_statement);
-        Ok(())
+        Ok(Object::Nil(Meta::default()))
     }
 
     fn execute_function_statement(
@@ -110,16 +93,16 @@ impl Interpreter {
             let value = self.evaluate_expression(argument.clone())?;
             self.variables.declare(identifier.clone(), value);
         }
-        self.execute_block_statement(function_statement.block)?;
+        let return_value = self.evaluate_block_expression(function_statement.block)?;
 
         self.variables = old_variables;
-        Ok(Object::Nil)
+        Ok(return_value)
     }
 
     fn execute_builtin_function_statement(
         &mut self,
         builtin_function_statement: BuiltinFunctionStatement,
-    ) -> Result<(), Error> {
+    ) -> Result<Object, Error> {
         match builtin_function_statement.builtin_function {
             BuiltinFunction::Read => {
                 let identifier = match builtin_function_statement.arguments[0].clone() {
@@ -128,8 +111,10 @@ impl Interpreter {
                 };
                 let mut value = String::new();
                 stdin().read_line(&mut value).unwrap();
-                self.variables
-                    .assign(identifier, Object::String(value.trim().to_string()))?;
+                self.variables.assign(
+                    identifier,
+                    Object::String(value.trim().to_string(), Meta::default()),
+                )?;
             }
 
             BuiltinFunction::Write => {
@@ -161,21 +146,42 @@ impl Interpreter {
             }
         }
 
-        Ok(())
+        Ok(Object::Nil(Meta::default()))
     }
 
-    fn execute_block_statement(&mut self, block_statment: BlockStatement) -> Result<(), Error> {
+    fn evaluate_if_expression(&mut self, if_statement: IfExpression) -> Result<Object, Error> {
+        let condition = self.evaluate_expression(*if_statement.condition)?;
+        if condition.is_truthy() {
+            self.evaluate_block_expression(if_statement.if_block)
+        } else if let Some(else_block) = *if_statement.else_block {
+            match else_block {
+                ElseBlock::Block(block_statment) => self.evaluate_block_expression(block_statment),
+                ElseBlock::If(if_statement) => self.evaluate_if_expression(if_statement),
+            }
+        } else {
+            Ok(Object::Nil(Meta::default()))
+        }
+    }
+
+    fn evaluate_block_expression(
+        &mut self,
+        block_expression: BlockExpression,
+    ) -> Result<Object, Error> {
         let old_variables = self.variables.clone();
-        for statement in *block_statment.statements {
-            self.execute_statement(statement)?;
+        let mut return_value = Object::Nil(Meta::default());
+        for statement in *block_expression.statements {
+            if let Statement::Return(return_expression) = statement {
+                return_value = self.evaluate_expression(return_expression)?;
+                return_value.set_return();
+                break;
+            }
+            return_value = self.execute_statement(statement.clone())?;
+            if return_value.is_return() {
+                break;
+            }
         }
         self.variables = old_variables;
-        Ok(())
-    }
-
-    fn execute_expression(&mut self, expression: Expression) -> Result<(), Error> {
-        self.evaluate_expression(expression)?;
-        Ok(())
+        Ok(return_value)
     }
 
     fn evaluate_expression(&mut self, expression: Expression) -> Result<Object, Error> {
@@ -191,18 +197,26 @@ impl Interpreter {
         let right = self.match_expression(*binary_expression.right)?;
 
         match binary_expression.operator.ttype {
-            TokenType::And => Ok(Object::Boolean(left.is_truthy() && right.is_truthy())),
+            TokenType::And => Ok(Object::Boolean(
+                left.is_truthy() && right.is_truthy(),
+                Meta::default(),
+            )),
 
-            TokenType::Or => Ok(Object::Boolean(left.is_truthy() || right.is_truthy())),
+            TokenType::Or => Ok(Object::Boolean(
+                left.is_truthy() || right.is_truthy(),
+                Meta::default(),
+            )),
 
-            TokenType::EqualEqual => Ok(Object::Boolean(left == right)),
+            TokenType::EqualEqual => Ok(Object::Boolean(left == right, Meta::default())),
 
-            TokenType::NotEqual => Ok(Object::Boolean(left != right)),
+            TokenType::NotEqual => Ok(Object::Boolean(left != right, Meta::default())),
 
             TokenType::Greater => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Boolean(x > y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Boolean(x > y, Meta::default()))
+                }
 
-                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                (Object::Boolean(..), Object::Boolean(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `boolean` as it's operand",
@@ -211,9 +225,11 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+                (Object::String(x, ..), Object::String(y, ..)) => {
+                    Ok(Object::String(x + &y, Meta::default()))
+                }
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -233,9 +249,11 @@ impl Interpreter {
             },
 
             TokenType::GreaterEqual => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Boolean(x >= y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Boolean(x >= y, Meta::default()))
+                }
 
-                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                (Object::Boolean(..), Object::Boolean(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `boolean` as it's operand",
@@ -244,9 +262,11 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+                (Object::String(x, ..), Object::String(y, ..)) => {
+                    Ok(Object::String(x + &y, Meta::default()))
+                }
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -266,9 +286,11 @@ impl Interpreter {
             },
 
             TokenType::Less => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Boolean(x < y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Boolean(x < y, Meta::default()))
+                }
 
-                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                (Object::Boolean(..), Object::Boolean(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `boolean` as it's operand",
@@ -277,9 +299,11 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+                (Object::String(x, ..), Object::String(y, ..)) => {
+                    Ok(Object::String(x + &y, Meta::default()))
+                }
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -299,9 +323,11 @@ impl Interpreter {
             },
 
             TokenType::LessEqual => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Boolean(x <= y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Boolean(x <= y, Meta::default()))
+                }
 
-                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                (Object::Boolean(..), Object::Boolean(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `boolean` as it's operand",
@@ -310,9 +336,11 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+                (Object::String(x, ..), Object::String(y, ..)) => {
+                    Ok(Object::String(x + &y, Meta::default()))
+                }
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -332,9 +360,11 @@ impl Interpreter {
             },
 
             TokenType::Plus => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x + y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Number(x + y, Meta::default()))
+                }
 
-                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                (Object::Boolean(..), Object::Boolean(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `boolean` as it's operand",
@@ -343,9 +373,11 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::String(x), Object::String(y)) => Ok(Object::String(x + &y)),
+                (Object::String(x, ..), Object::String(y, ..)) => {
+                    Ok(Object::String(x + &y, Meta::default()))
+                }
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -365,9 +397,11 @@ impl Interpreter {
             },
 
             TokenType::Minus => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x - y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Number(x - y, Meta::default()))
+                }
 
-                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                (Object::Boolean(..), Object::Boolean(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `boolean` as it's operand",
@@ -376,7 +410,7 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::String(_), Object::String(_)) => Err(Error::new(
+                (Object::String(..), Object::String(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `string` as it's operand",
@@ -385,7 +419,7 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -405,9 +439,11 @@ impl Interpreter {
             },
 
             TokenType::Star => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x * y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Number(x * y, Meta::default()))
+                }
 
-                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                (Object::Boolean(..), Object::Boolean(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `boolean` as it's operand",
@@ -416,7 +452,7 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::String(_), Object::String(_)) => Err(Error::new(
+                (Object::String(..), Object::String(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `string` as it's operand",
@@ -425,7 +461,7 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -445,9 +481,11 @@ impl Interpreter {
             },
 
             TokenType::Slash => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x / y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Number(x / y, Meta::default()))
+                }
 
-                (Object::Boolean(_), Object::Boolean(_)) => Err(Error::new(
+                (Object::Boolean(..), Object::Boolean(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `boolean` as it's operand",
@@ -456,7 +494,7 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::String(_), Object::String(_)) => Err(Error::new(
+                (Object::String(..), Object::String(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `string` as it's operand",
@@ -465,7 +503,7 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -485,9 +523,11 @@ impl Interpreter {
             },
 
             TokenType::Modulo => match (left, right) {
-                (Object::Number(x), Object::Number(y)) => Ok(Object::Number(x % y)),
+                (Object::Number(x, ..), Object::Number(y, ..)) => {
+                    Ok(Object::Number(x % y, Meta::default()))
+                }
 
-                (Object::String(_), Object::String(_)) => Err(Error::new(
+                (Object::String(..), Object::String(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `string` as it's operand",
@@ -496,7 +536,7 @@ impl Interpreter {
                     binary_expression.operator.position,
                 )),
 
-                (Object::Nil, Object::Nil) => Err(Error::new(
+                (Object::Nil(..), Object::Nil(..)) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` doesn't support `nil` as it's operand",
@@ -533,12 +573,12 @@ impl Interpreter {
         let right = self.match_expression(*unary_expression.right)?;
 
         match unary_expression.operator.ttype {
-            TokenType::Not => Ok(Object::Boolean(!right.is_truthy())),
+            TokenType::Not => Ok(Object::Boolean(!right.is_truthy(), Meta::default())),
 
             TokenType::Minus => match right {
-                Object::Number(x) => Ok(Object::Number(x * -1.)),
+                Object::Number(x, ..) => Ok(Object::Number(x * -1., Meta::default())),
 
-                Object::Boolean(_) => Err(Error::new(
+                Object::Boolean(..) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` does not support `boolean` as it's operand",
@@ -547,7 +587,7 @@ impl Interpreter {
                     unary_expression.operator.position,
                 )),
 
-                Object::String(_) => Err(Error::new(
+                Object::String(..) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` does not support `string` as it's operand",
@@ -556,7 +596,7 @@ impl Interpreter {
                     unary_expression.operator.position,
                 )),
 
-                Object::Nil => Err(Error::new(
+                Object::Nil(..) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` does not support `nil` as it's operand",
@@ -565,7 +605,7 @@ impl Interpreter {
                     unary_expression.operator.position,
                 )),
 
-                Object::Array(_) => Err(Error::new(
+                Object::Array(..) => Err(Error::new(
                     ErrorType::RuntimeError,
                     format!(
                         "Type mismatch, `{}` does not support `array` as it's operand",
@@ -635,11 +675,15 @@ impl Interpreter {
                 Ok(self.evaluate_identifier_expression(identifier_expression)?)
             }
 
+            Expression::Block(block_expression) => self.evaluate_block_expression(block_expression),
+
+            Expression::If(if_expression) => self.evaluate_if_expression(if_expression),
+
             Expression::Literal(literal_expression) => {
                 if let Some(object) = literal_expression.object.literal {
                     Ok(object)
                 } else {
-                    Ok(Object::Nil)
+                    Ok(Object::Nil(Meta::default()))
                 }
             }
 
@@ -650,7 +694,7 @@ impl Interpreter {
                         objects.push(object)
                     }
                 }
-                Ok(Object::Array(objects))
+                Ok(Object::Array(objects, Meta::default()))
             }
         }
     }

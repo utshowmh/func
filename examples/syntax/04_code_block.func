@@ -1,6 +1,15 @@
-{
-    let god = "nature"                              // Well, I'm an Spinozist : )
-    write("god is: " + god + ".\n")         // String concatination
+// Return a value from a block, using the return keyword.
+let result = {
+    let a = 1
+    let b = 2
+    return a + b
 }
 
-write(god)          // This will thorw an RuntimeError because god has gone out of scope.
+write("result is: ", result , "\n") // result is: 3
+
+{
+    let god = "nature"              // Well, I'm an Spinozist : )
+    write("god is: " + god + ".\n") // String concatination
+}
+
+write(god) // This will thorw an RuntimeError because god has gone out of scope.

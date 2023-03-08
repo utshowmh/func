@@ -1,5 +1,9 @@
-func say_my_name(name) {
-    write("you are... ", name, "\n")
+func say_name_message(name) {
+    return "you are... " + name + "\n"
 }
 
-say_my_name("heisenberg")
+func say_my_name(name) {
+    write(say_name_message(name))
+}
+
+say_my_name("heisenberg") // you are... heisenberg

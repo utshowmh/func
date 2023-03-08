@@ -6,10 +6,10 @@ pub type Program = Vec<Statement>;
 pub enum Statement {
     Let(LetStatement),
     Assignment(AssignmentStatement),
-    Block(BlockStatement),
     If(IfStatement),
     Function(FunctionStatement),
     BuiltinFunction(BuiltinFunctionStatement),
+    Return(Expression),
     Expression(Expression),
 }
 
@@ -23,7 +23,7 @@ pub enum BuiltinFunction {
 
 #[derive(Debug, Clone)]
 pub enum ElseBlock {
-    Block(BlockStatement),
+    Block(BlockExpression),
     If(IfStatement),
 }
 
@@ -58,11 +58,11 @@ impl AssignmentStatement {
 }
 
 #[derive(Debug, Clone)]
-pub struct BlockStatement {
+pub struct BlockExpression {
     pub statements: Box<Vec<Statement>>,
 }
 
-impl BlockStatement {
+impl BlockExpression {
     pub fn new(statements: Vec<Statement>) -> Self {
         Self {
             statements: Box::new(statements),
@@ -73,14 +73,14 @@ impl BlockStatement {
 #[derive(Debug, Clone)]
 pub struct IfStatement {
     pub condition: Expression,
-    pub if_block: BlockStatement,
+    pub if_block: BlockExpression,
     pub else_block: Box<Option<ElseBlock>>,
 }
 
 impl IfStatement {
     pub fn new(
         condition: Expression,
-        if_block: BlockStatement,
+        if_block: BlockExpression,
         else_block: Option<ElseBlock>,
     ) -> Self {
         Self {
@@ -95,7 +95,7 @@ impl IfStatement {
 pub struct FunctionStatement {
     pub identifier: Token,
     pub paramiters: Vec<Token>,
-    pub block: BlockStatement,
+    pub block: BlockExpression,
     pub is_builtin: bool,
 }
 
@@ -103,7 +103,7 @@ impl FunctionStatement {
     pub fn new(
         identifier: Token,
         paramiters: Vec<Token>,
-        block: BlockStatement,
+        block: BlockExpression,
         is_builtin: bool,
     ) -> Self {
         Self {
@@ -132,6 +132,7 @@ impl BuiltinFunctionStatement {
 
 #[derive(Debug, Clone)]
 pub enum Expression {
+    Block(BlockExpression),
     Binary(BinaryExpression),
     Unary(UnaryExpression),
     Group(GroupExpression),

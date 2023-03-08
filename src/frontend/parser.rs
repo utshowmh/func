@@ -1,6 +1,6 @@
 use crate::common::{
     ast::{
-        ArrayExpression, AssignmentStatement, BinaryExpression, BlockStatement, BuiltinFunction,
+        ArrayExpression, AssignmentStatement, BinaryExpression, BlockExpression, BuiltinFunction,
         BuiltinFunctionStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
         GroupExpression, IdentifierExpression, IfStatement, LetStatement, LiteralExpression,
         Program, Statement, UnaryExpression,
@@ -78,7 +78,10 @@ impl Parser {
             TokenType::Func => Ok(Statement::Function(self.function_statement()?)),
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
             TokenType::If => Ok(Statement::If(self.if_statement()?)),
-            TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
+            TokenType::Return => Ok(Statement::Return(self.return_statement()?)),
+            TokenType::OpenCurly => Ok(Statement::Expression(Expression::Block(
+                self.block_expression()?,
+            ))),
             current_ttype => {
                 if self.does_match(&[
                     TokenType::Read,
@@ -144,7 +147,7 @@ impl Parser {
             }
         }
         self.eat(TokenType::CloseParen)?;
-        let block = self.block_statement()?;
+        let block = self.block_expression()?;
 
         Ok(FunctionStatement::new(identifier, paramiters, block, false))
     }
@@ -215,21 +218,26 @@ impl Parser {
     fn if_statement(&mut self) -> Result<IfStatement, Error> {
         self.advance();
         let condition = self.expression()?;
-        let if_block = self.block_statement()?;
+        let if_block = self.block_expression()?;
         let mut else_block = None;
         while self.does_match(&[TokenType::Else]) {
             self.advance();
             if self.does_match(&[TokenType::If]) {
                 else_block = Some(ElseBlock::If(self.if_statement()?));
             } else {
-                else_block = Some(ElseBlock::Block(self.block_statement()?));
+                else_block = Some(ElseBlock::Block(self.block_expression()?));
             }
         }
 
         Ok(IfStatement::new(condition, if_block, else_block))
     }
 
-    fn block_statement(&mut self) -> Result<BlockStatement, Error> {
+    fn return_statement(&mut self) -> Result<Expression, Error> {
+        self.advance();
+        self.expression()
+    }
+
+    fn block_expression(&mut self) -> Result<BlockExpression, Error> {
         self.advance();
         let mut statements = Vec::new();
         loop {
@@ -239,11 +247,19 @@ impl Parser {
             statements.push(self.statemet()?);
         }
         self.eat(TokenType::CloseCurly)?;
-        Ok(BlockStatement::new(statements))
+        Ok(BlockExpression::new(statements))
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
-        self.and()
+        self.block()
+    }
+
+    fn block(&mut self) -> Result<Expression, Error> {
+        if self.peek().ttype == TokenType::OpenCurly {
+            self.block_expression().map(Expression::Block)
+        } else {
+            self.and()
+        }
     }
 
     fn and(&mut self) -> Result<Expression, Error> {

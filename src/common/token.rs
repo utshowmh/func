@@ -40,6 +40,7 @@ pub enum TokenType {
     Func,
     If,
     Else,
+    Return,
 
     Read,
     Write,
@@ -88,6 +89,7 @@ impl Display for TokenType {
             Self::Func => write!(f, "func"),
             Self::If => write!(f, "if"),
             Self::Else => write!(f, "else"),
+            Self::Return => write!(f, "return"),
 
             Self::Read => write!(f, "read"),
             Self::Write => write!(f, "write"),

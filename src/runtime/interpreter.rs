@@ -2,7 +2,7 @@ use std::io::stdin;
 
 use crate::common::{
     ast::{
-        AssignmentStatement, BinaryExpression, BlockStatement, BuiltinFunction,
+        AssignmentStatement, BinaryExpression, BlockExpression, BuiltinFunction,
         BuiltinFunctionStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
         GroupExpression, IdentifierExpression, IfStatement, LetStatement, Program, Statement,
         UnaryExpression,
@@ -52,9 +52,8 @@ impl Interpreter {
                 self.execute_builtin_function_statement(builtin_function_statement)
             }
 
-            Statement::Block(block_statement) => self.execute_block_statement(block_statement),
-
             Statement::Expression(expression) => self.execute_expression(expression),
+            _ => Ok(()),
         }
     }
 
@@ -81,15 +80,13 @@ impl Interpreter {
     fn execute_if_statement(&mut self, if_statement: IfStatement) -> Result<(), Error> {
         let condition = self.evaluate_expression(if_statement.condition)?;
         if condition.is_truthy() {
-            self.execute_block_statement(if_statement.if_block)?;
-        } else {
-            if let Some(else_block) = *if_statement.else_block {
-                match else_block {
-                    ElseBlock::Block(block_statment) => {
-                        self.execute_block_statement(block_statment)?
-                    }
-                    ElseBlock::If(if_statement) => self.execute_if_statement(if_statement)?,
+            self.evaluate_block_expression(if_statement.if_block)?;
+        } else if let Some(else_block) = *if_statement.else_block {
+            match else_block {
+                ElseBlock::Block(block_statment) => {
+                    self.evaluate_block_expression(block_statment)?;
                 }
+                ElseBlock::If(if_statement) => self.execute_if_statement(if_statement)?,
             }
         }
 
@@ -117,10 +114,10 @@ impl Interpreter {
             let value = self.evaluate_expression(arguments[index].clone())?;
             self.variables.declare(identifier, value);
         }
-        self.execute_block_statement(function_statement.block)?;
+        let return_value = self.evaluate_block_expression(function_statement.block)?;
 
         self.variables = old_variables;
-        Ok(Object::Nil)
+        Ok(return_value)
     }
 
     fn execute_builtin_function_statement(
@@ -171,13 +168,21 @@ impl Interpreter {
         Ok(())
     }
 
-    fn execute_block_statement(&mut self, block_statment: BlockStatement) -> Result<(), Error> {
+    fn evaluate_block_expression(
+        &mut self,
+        block_expression: BlockExpression,
+    ) -> Result<Object, Error> {
         let old_variables = self.variables.clone();
-        for statement in *block_statment.statements {
+        let mut return_value = Object::Nil;
+        for statement in *block_expression.statements {
+            if let Statement::Return(return_expression) = statement {
+                return_value = self.evaluate_expression(return_expression)?;
+                break;
+            }
             self.execute_statement(statement)?;
         }
         self.variables = old_variables;
-        Ok(())
+        Ok(return_value)
     }
 
     fn execute_expression(&mut self, expression: Expression) -> Result<(), Error> {
@@ -640,6 +645,14 @@ impl Interpreter {
 
             Expression::Identifier(identifier_expression) => {
                 Ok(self.evaluate_identifier_expression(identifier_expression)?)
+            }
+
+            Expression::Block(block_expression) => {
+                if let Ok(object) = self.evaluate_block_expression(block_expression) {
+                    Ok(object)
+                } else {
+                    Ok(Object::Nil)
+                }
             }
 
             Expression::Literal(literal_expression) => {

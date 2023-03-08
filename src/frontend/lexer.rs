@@ -37,6 +37,8 @@ impl Lexer {
         self.keywords.insert("func".to_string(), TokenType::Func);
         self.keywords.insert("if".to_string(), TokenType::If);
         self.keywords.insert("else".to_string(), TokenType::Else);
+        self.keywords
+            .insert("return".to_string(), TokenType::Return);
 
         self.keywords.insert("true".to_string(), TokenType::Boolean);
         self.keywords

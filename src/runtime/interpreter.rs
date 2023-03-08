@@ -4,7 +4,7 @@ use crate::common::{
     ast::{
         AssignmentStatement, BinaryExpression, BlockExpression, BuiltinFunction,
         BuiltinFunctionStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
-        GroupExpression, IdentifierExpression, IfStatement, LetStatement, Program, Statement,
+        GroupExpression, IdentifierExpression, IfExpression, LetStatement, Program, Statement,
         UnaryExpression,
     },
     error::{Error, ErrorType},
@@ -46,8 +46,6 @@ impl Interpreter {
                 self.define_function_statement(function_statement)
             }
 
-            Statement::If(if_statement) => self.execute_if_statement(if_statement),
-
             Statement::BuiltinFunction(builtin_function_statement) => {
                 self.execute_builtin_function_statement(builtin_function_statement)
             }
@@ -73,22 +71,6 @@ impl Interpreter {
         self.variables.get(identifier.clone())?;
         let value = self.evaluate_expression(assignment_statement.expression)?;
         self.variables.assign(identifier, value)?;
-
-        Ok(())
-    }
-
-    fn execute_if_statement(&mut self, if_statement: IfStatement) -> Result<(), Error> {
-        let condition = self.evaluate_expression(if_statement.condition)?;
-        if condition.is_truthy() {
-            self.evaluate_block_expression(if_statement.if_block)?;
-        } else if let Some(else_block) = *if_statement.else_block {
-            match else_block {
-                ElseBlock::Block(block_statment) => {
-                    self.evaluate_block_expression(block_statment)?;
-                }
-                ElseBlock::If(if_statement) => self.execute_if_statement(if_statement)?,
-            }
-        }
 
         Ok(())
     }
@@ -166,6 +148,20 @@ impl Interpreter {
         }
 
         Ok(())
+    }
+
+    fn evaluate_if_expression(&mut self, if_statement: IfExpression) -> Result<Object, Error> {
+        let condition = self.evaluate_expression(*if_statement.condition)?;
+        if condition.is_truthy() {
+            self.evaluate_block_expression(if_statement.if_block)
+        } else if let Some(else_block) = *if_statement.else_block {
+            match else_block {
+                ElseBlock::Block(block_statment) => self.evaluate_block_expression(block_statment),
+                ElseBlock::If(if_statement) => self.evaluate_if_expression(if_statement),
+            }
+        } else {
+            Ok(Object::Nil)
+        }
     }
 
     fn evaluate_block_expression(
@@ -654,6 +650,8 @@ impl Interpreter {
                     Ok(Object::Nil)
                 }
             }
+
+            Expression::If(if_expression) => self.evaluate_if_expression(if_expression),
 
             Expression::Literal(literal_expression) => {
                 if let Some(object) = literal_expression.object.literal {

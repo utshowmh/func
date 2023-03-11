@@ -1,12 +1,12 @@
 use crate::common::{
     ast::{
-        ArrayExpression, AssignmentStatement, BinaryExpression, BlockStatement, BuiltinFunction,
+        ArrayExpression, AssignmentStatement, BinaryExpression, BlockExpression, BuiltinFunction,
         BuiltinFunctionStatement, CallExpression, ElseBlock, Expression, FunctionStatement,
-        GroupExpression, IdentifierExpression, IfStatement, LetStatement, LiteralExpression,
+        GroupExpression, IdentifierExpression, IfExpression, LetStatement, LiteralExpression,
         Program, Statement, UnaryExpression,
     },
     error::{Error, ErrorType},
-    object::Object,
+    object::{Meta, Object},
     token::{Token, TokenType},
 };
 
@@ -60,7 +60,7 @@ impl Parser {
     }
 
     fn eat(&mut self, ttype: TokenType) -> Result<Token, Error> {
-        let token = self.peek().clone();
+        let token = self.peek();
         if token.ttype == ttype {
             self.advance();
             Ok(token)
@@ -77,8 +77,10 @@ impl Parser {
         match self.peek().ttype {
             TokenType::Func => Ok(Statement::Function(self.function_statement()?)),
             TokenType::Let => Ok(Statement::Let(self.let_statement()?)),
-            TokenType::If => Ok(Statement::If(self.if_statement()?)),
-            TokenType::OpenCurly => Ok(Statement::Block(self.block_statement()?)),
+            TokenType::Return => Ok(Statement::Return(self.return_statement()?)),
+            TokenType::OpenCurly => Ok(Statement::Expression(Expression::Block(
+                self.block_expression()?,
+            ))),
             current_ttype => {
                 if self.does_match(&[
                     TokenType::Read,
@@ -113,7 +115,7 @@ impl Parser {
                 Expression::Literal(LiteralExpression::new(Token::new(
                     TokenType::Nil,
                     "nil".to_string(),
-                    Some(Object::Nil),
+                    Some(Object::Nil(Meta::default())),
                     self.peek().position,
                 ))),
             ))
@@ -144,26 +146,25 @@ impl Parser {
             }
         }
         self.eat(TokenType::CloseParen)?;
-        let block = self.block_statement()?;
+        let block = self.block_expression()?;
 
         Ok(FunctionStatement::new(identifier, paramiters, block, false))
     }
 
     fn builtin_function_statement(&mut self) -> Result<BuiltinFunctionStatement, Error> {
         let func_type = self.next_token().ttype;
-        let mut builtin_func = None;
 
         self.eat(TokenType::OpenParen)?;
 
-        match func_type {
+        let builtin_func = match func_type {
             TokenType::Read => {
                 let identifier = self.eat(TokenType::Identifier)?;
-                builtin_func = Some(BuiltinFunctionStatement::new(
+                BuiltinFunctionStatement::new(
                     BuiltinFunction::Read,
                     vec![Expression::Identifier(IdentifierExpression::new(
                         identifier,
                     ))],
-                ));
+                )
             }
 
             TokenType::Write => {
@@ -176,60 +177,62 @@ impl Parser {
                         break;
                     }
                 }
-                builtin_func = Some(BuiltinFunctionStatement::new(
-                    BuiltinFunction::Write,
-                    arguments,
-                ));
+                BuiltinFunctionStatement::new(BuiltinFunction::Write, arguments)
             }
 
             TokenType::Push => {
                 let expression = self.expression()?;
                 self.eat(TokenType::Comma)?;
                 let identifier = self.eat(TokenType::Identifier)?;
-                builtin_func = Some(BuiltinFunctionStatement::new(
+                BuiltinFunctionStatement::new(
                     BuiltinFunction::Push,
                     vec![
                         expression,
                         Expression::Identifier(IdentifierExpression::new(identifier)),
                     ],
-                ));
+                )
             }
 
             TokenType::Pop => {
                 let identifier = self.eat(TokenType::Identifier)?;
-                builtin_func = Some(BuiltinFunctionStatement::new(
+                BuiltinFunctionStatement::new(
                     BuiltinFunction::Pop,
                     vec![Expression::Identifier(IdentifierExpression::new(
                         identifier,
                     ))],
-                ));
+                )
             }
 
             _ => panic!(), // We're never reaching this because we've already filtered token type.
-        }
+        };
 
         self.eat(TokenType::CloseParen)?;
-        Ok(builtin_func.unwrap())
+        Ok(builtin_func)
     }
 
-    fn if_statement(&mut self) -> Result<IfStatement, Error> {
+    fn if_expression(&mut self) -> Result<IfExpression, Error> {
         self.advance();
         let condition = self.expression()?;
-        let if_block = self.block_statement()?;
+        let if_block = self.block_expression()?;
         let mut else_block = None;
         while self.does_match(&[TokenType::Else]) {
             self.advance();
             if self.does_match(&[TokenType::If]) {
-                else_block = Some(ElseBlock::If(self.if_statement()?));
+                else_block = Some(ElseBlock::If(self.if_expression()?));
             } else {
-                else_block = Some(ElseBlock::Block(self.block_statement()?));
+                else_block = Some(ElseBlock::Block(self.block_expression()?));
             }
         }
 
-        Ok(IfStatement::new(condition, if_block, else_block))
+        Ok(IfExpression::new(condition, if_block, else_block))
     }
 
-    fn block_statement(&mut self) -> Result<BlockStatement, Error> {
+    fn return_statement(&mut self) -> Result<Expression, Error> {
+        self.advance();
+        self.expression()
+    }
+
+    fn block_expression(&mut self) -> Result<BlockExpression, Error> {
         self.advance();
         let mut statements = Vec::new();
         loop {
@@ -239,11 +242,21 @@ impl Parser {
             statements.push(self.statemet()?);
         }
         self.eat(TokenType::CloseCurly)?;
-        Ok(BlockStatement::new(statements))
+        Ok(BlockExpression::new(statements))
     }
 
     fn expression(&mut self) -> Result<Expression, Error> {
-        self.and()
+        self.block()
+    }
+
+    fn block(&mut self) -> Result<Expression, Error> {
+        if self.peek().ttype == TokenType::OpenCurly {
+            self.block_expression().map(Expression::Block)
+        } else if self.peek().ttype == TokenType::If {
+            self.if_expression().map(Expression::If)
+        } else {
+            self.and()
+        }
     }
 
     fn and(&mut self) -> Result<Expression, Error> {
@@ -255,7 +268,7 @@ impl Parser {
             left = Expression::Binary(BinaryExpression::new(left, operator, right));
         }
 
-        return Ok(left);
+        Ok(left)
     }
 
     fn or(&mut self) -> Result<Expression, Error> {
@@ -267,7 +280,7 @@ impl Parser {
             left = Expression::Binary(BinaryExpression::new(left, operator, right));
         }
 
-        return Ok(left);
+        Ok(left)
     }
 
     fn equality(&mut self) -> Result<Expression, Error> {
@@ -279,7 +292,7 @@ impl Parser {
             left = Expression::Binary(BinaryExpression::new(left, operator, right));
         }
 
-        return Ok(left);
+        Ok(left)
     }
 
     fn comparison(&mut self) -> Result<Expression, Error> {
@@ -296,7 +309,7 @@ impl Parser {
             left = Expression::Binary(BinaryExpression::new(left, operator, right));
         }
 
-        return Ok(left);
+        Ok(left)
     }
 
     fn additive(&mut self) -> Result<Expression, Error> {
@@ -308,7 +321,7 @@ impl Parser {
             left = Expression::Binary(BinaryExpression::new(left, operator, right));
         }
 
-        return Ok(left);
+        Ok(left)
     }
 
     fn multiplicative(&mut self) -> Result<Expression, Error> {
@@ -320,11 +333,11 @@ impl Parser {
             left = Expression::Binary(BinaryExpression::new(left, operator, right));
         }
 
-        return Ok(left);
+        Ok(left)
     }
 
     fn unary(&mut self) -> Result<Expression, Error> {
-        while self.does_match(&[TokenType::Minus, TokenType::Not]) {
+        if self.does_match(&[TokenType::Minus, TokenType::Not]) {
             let operator = self.next_token();
             let right = self.primary()?;
             return Ok(Expression::Unary(UnaryExpression::new(operator, right)));

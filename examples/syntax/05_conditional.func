@@ -1,9 +1,23 @@
-let everyting = "cosmos"
+let everyting = "cosmoas"
 
-if everyting == nil {
-    write("I don't agree with you.\n")
+let message = if everyting == nil {
+    return "I don't agree with you.\n"
 } else if everyting == "cosmos" {
-    write("I also think the same.\n")
+    return "I also think the same.\n"
 } else {
-    write("I dunno!\n")
+    return "I dunno!\n"
 }
+
+write(message)
+
+// You can also remove the return keyword and it's will return the last expression in the block.
+
+let message = if everyting == nil {
+    "I don't agree with you.\n"
+} else if everyting == "cosmos" {
+    "I also think the same.\n"
+} else {
+    "I dunno!\n"
+}
+
+write(message)

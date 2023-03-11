@@ -4,6 +4,9 @@ Func (this name ain't final) is a [interpreted](https://en.wikipedia.org/wiki/In
 
 ---
 
+## MSRV (Minimum Supported Rust Version)
+The MSRV is 1.59.0
+
 ## Grammer
 
 The [Grammer](https://en.wikipedia.org/wiki/Context-free_grammar) for func is defined [here](https://github.com/utshowmh/func/blob/main/GRAMMER.md).

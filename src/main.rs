@@ -27,7 +27,7 @@ fn run() -> Result<(), Error> {
             if source_path == "-h" {
                 print_usage(None);
             } else {
-                run_file(&source_path)?;
+                run_file(source_path)?;
             }
         }
         _ => print_usage(Some("Invalid number of argument")),
@@ -46,7 +46,7 @@ fn run_repl() -> Result<(), Error> {
         stdout().flush().unwrap();
         stdin().read_line(&mut line).unwrap();
 
-        let mut lexer = Lexer::new("stdin".to_string(), &line.trim());
+        let mut lexer = Lexer::new("stdin".to_string(), line.trim());
         let tokens = lexer.lex()?;
 
         let mut parser = Parser::new(tokens);

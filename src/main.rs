@@ -19,7 +19,7 @@ fn run() -> Result<(), Error> {
 
     match args.len() {
         1 => {
-            run_repl()?;
+            run_repl();
         }
 
         2 => {
@@ -36,11 +36,8 @@ fn run() -> Result<(), Error> {
     Ok(())
 }
 
-fn run_repl() -> Result<(), Error> {
+fn repl_loop(interpreter: &mut Interpreter) -> Result<(), Error> {
     let mut line = String::new();
-    println!("Warning: This REPL doesn't remember environment.");
-    println!("Press [Ctrl] + [c] exit.");
-
     loop {
         print!(":> ");
         stdout().flush().unwrap();
@@ -51,11 +48,20 @@ fn run_repl() -> Result<(), Error> {
 
         let mut parser = Parser::new(tokens);
         let program = parser.parse()?;
-
-        let mut interpreter = Interpreter::new();
         interpreter.interpret(program)?;
 
+
         line.clear();
+    }
+}
+
+fn run_repl() {
+    println!("Press [Ctrl] + [c] exit.");
+    let mut interpreter = Interpreter::new();
+    loop {
+        if let Err(err) = repl_loop(&mut interpreter) {
+            err.report();
+        }
     }
 }
 
